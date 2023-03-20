@@ -1,0 +1,23 @@
+# 数据库驱动
+# 数据库连接地址
+# 数据库用户名&密码
+# 应用服务 WEB 访问端口
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/shopping_pig?serverTimezone=UTC&zeroDateTimeBehavior=CONVERT_TO_NULL
+    username: root
+    password: abc123
+
+server:
+  port: 8080
+
+#指定Mybatis的Mapper文件
+mybatis:
+  mapper-locations: classpath:mappers/*.xml
+  type-aliases-package: com.ze.pigSale.entity
+  configuration:
+    map-underscore-to-camel-case: true
+
+pigSale:
+  path: D\temp\

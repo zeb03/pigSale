@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ze.pigSale.mapper.CategoryProductMapper">
+
+    <resultMap id="BaseResultMap" type="com.ze.pigSale.entity.Product">
+        <id property="categoryId" column="category_id" jdbcType="BIGINT"/>
+        <result property="productId" column="product_id" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="DATE"/>
+        <result property="updateTime" column="update_time" jdbcType="DATE"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        category_id
+        ,product_id,createTime,updateTime
+    </sql>
+
+    <!-- void insert(Product product); -->
+    <insert id="insert" useGeneratedKeys="true">
+        insert into category_product
+        values (#{categoryId}, #{productId}, #{createTime}, #{updateTime})
+    </insert>
+
+</mapper>
