@@ -20,4 +20,26 @@
         recipient_phone,province,city,
         district,detail
     </sql>
+
+    <insert id="insertAddress" useGeneratedKeys="true" keyProperty="addressId">
+        insert into address
+        values (null, #{userId}, #{recipientName}, #{recipientPhone}, #{province}, #{city}, #{district}, #{detail})
+    </insert>
+
+    <update id="updateAddress">
+        update address
+        set user_id = #{userId}, recipient_name = #{recipientName}, recipient_phone = #{recipientPhone},
+            province = #{province}, city = #{city}, district = #{district}, detail = #{detail}
+    </update>
+
+    <delete id="deleteAddress">
+        delete from address
+        where address_id = #{addressId}
+    </delete>
+
+    <select id="getAddressList" resultType="com.ze.pigSale.entity.Address">
+        select *
+        from address
+    </select>
+
 </mapper>

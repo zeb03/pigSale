@@ -78,7 +78,7 @@ public class UserController {
      * @return
      */
     @PostMapping
-    public Result<User> addUser(@RequestBody User user) {
+    public Result<User> add(@RequestBody User user) {
         user.setRole(1);
         userService.register(user);
         return Result.success(user);
@@ -87,34 +87,42 @@ public class UserController {
 
     /**
      * 分页查询所有用户
+     *
      * @param currentPage
      * @param pageSize
      * @return
      */
     @GetMapping("/page")
-    public Result<PageInfo<User>> page(Integer currentPage, Integer pageSize){
-        PageInfo<User> userPage = userService.getUserPage(currentPage, pageSize);
+    public Result<PageInfo<User>> page(Integer currentPage, Integer pageSize, Integer role) {
+        PageInfo<User> userPage = userService.getUserPage(currentPage, pageSize, role);
         return Result.success(userPage);
     }
 
     /**
      * 修改用户
+     *
      * @param user
      * @return
      */
     @PutMapping
-    public Result<User> updateUser(@RequestBody User user){
-        userService.updateUser(user);
-        return Result.success(user);
+    public Result<User> edit(@RequestBody User user, Long updateUser) {
+        User role = userService.getUserById(updateUser);
+        if ("admin".equals(role.getUsername())) {
+            userService.updateUser(user);
+            return Result.success(user);
+        } else {
+            return Result.error("无权限");
+        }
     }
 
     /**
      * 删除用户
+     *
      * @param userId
      * @return
      */
     @DeleteMapping("/{userId}")
-    public Result<String> deleteUser(@PathVariable("userId") Long userId){
+    public Result<String> remove(@PathVariable("userId") Long userId) {
         userService.deleteUser(userId);
         return Result.success("删除成功");
     }

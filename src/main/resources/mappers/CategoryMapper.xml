@@ -21,6 +21,17 @@
         values (null, #{categoryName}, #{parentId}, #{createTime}, #{updateTime})
     </insert>
 
+    <update id="updateCategory">
+        update category
+        set category_name = #{categoryName}, parent_id = #{parentId}, update_time = #{updateTime}
+        where category_id = #{categoryId}
+    </update>
+
+    <delete id="deleteCategory">
+        delete from category
+        where category_id = #{categoryId}
+    </delete>
+
     <!--Category getCategoryById(Integer id);-->
     <select id="getCategoryById" resultType="Category">
         select *

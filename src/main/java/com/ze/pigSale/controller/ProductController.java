@@ -120,7 +120,7 @@ public class ProductController {
      * @return
      */
     @PutMapping
-    public Result<Product> update(@RequestBody Product product) {
+    public Result<Product> edit(@RequestBody Product product) {
         log.info("updateProduct: {}", product);
         product.setUpdateTime(LocalDateTime.now());
         productService.updateProduct(product);

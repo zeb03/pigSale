@@ -20,7 +20,7 @@ public interface UserMapper {
      * @param id
      * @return
      */
-    User getUserById(@Param("id") Integer id);
+    User getUserById(@Param("id") Long id);
 
     /**
      * 通过name查找用户
@@ -30,10 +30,18 @@ public interface UserMapper {
     User getUserByName(@Param("name") String username);
 
     /**
+     * 通过role查找用户
+     * @param role
+     * @return
+     */
+    List<User> getUserByRole(@Param("role") Integer role);
+
+    /**
      * 查询所有用户
      * @return
      */
     List<User> getUserList();
+
 
     /**
      * 保存用户

@@ -32,43 +32,39 @@ import java.util.List;
 @Slf4j
 public class MyWebConfig implements WebMvcConfigurer {
 
-//    @Override
-//    public void addInterceptors(InterceptorRegistry registry) {
-//        LoginInterceptor loginInterceptor = new LoginInterceptor();
-//        registry.addInterceptor(loginInterceptor)
-//                .addPathPatterns("/**")
-//                .excludePathPatterns(
-//                        "/user/login",
-//                        "/user/logout",
-//                        "/common/**",
-//                        "/index.html",
-//                        "/js/**",
-//                        "/css/**",
-//                        "/img/**",
-//                        "/fonts/**",
-//                        "//favicon.ico",
-//                        "/user/sendMsg",
-//                        "/");
-//    }
-//              "/employee/login",
-//            "/employee/login",
-//            "/backend/**",
-//            "/front/**",
-//            "/user/sendMsg",
-//            "/user/login",
-//            "/doc.html",
-//            "/webjars/**",
-//            "/swagger-resources",
-//            "/v2/api-docs"
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        LoginInterceptor loginInterceptor = new LoginInterceptor();
+        registry.addInterceptor(loginInterceptor)
+                .addPathPatterns("/**")
+                .excludePathPatterns(
+                        "/user/login",
+                        "/index.html/login.html",
+                        "to/login",
+                        "/user/logout",
+                        "user/register",
+                        "/common/**",
+                        "/js/**",
+                        "/css/**",
+                        "/img/**",
+                        "/fonts/**",
+                        "/favicon.ico",
+                        "/user/sendMsg",
+                        "/doc.html",
+                        "/webjars/**",
+                        "/swagger-resources",
+                        "/v2/api-docs");
+    }
 
     /**
      * 设置静态资源映射
-     * */
+     */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         //添加映射
         log.info("映射资源开始");
         registry.addResourceHandler("doc.html").addResourceLocations("classpath:/META-INF/resources/");
+//        registry.addResourceHandler("/").addResourceLocations("classpath:/META-INF/resources/");
         registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
 

@@ -75,5 +75,10 @@
         select *
         from user
     </select>
+    <select id="getUserByRole" resultType="com.ze.pigSale.entity.User">
+        select *
+        from user
+        where role = #{role}
+    </select>
 
 </mapper>

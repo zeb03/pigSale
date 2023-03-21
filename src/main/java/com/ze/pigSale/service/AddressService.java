@@ -1,19 +1,16 @@
-package com.ze.pigSale.mapper;
+package com.ze.pigSale.service;
 
+import com.github.pagehelper.PageInfo;
 import com.ze.pigSale.entity.Address;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 /**
-* @author z
-* @description 针对表【address】的数据库操作Mapper
-* @createDate 2023-03-13 15:32:23
-* @Entity com.ze.pig.entity.Address
-*/
-@Mapper
-public interface AddressMapper {
+ * author: zebii
+ * Date: 2023-03-21-10:11
+ */
+
+public interface AddressService {
 
     /**
      * 查询所有的address
@@ -37,10 +34,5 @@ public interface AddressMapper {
      * 删除address
      * @param addressId
      */
-    void deleteAddress(@Param("addressId") Long addressId);
-
+    void deleteAddress(Long addressId);
 }
-
-
-
-

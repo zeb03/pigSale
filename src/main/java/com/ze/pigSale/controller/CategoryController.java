@@ -31,12 +31,26 @@ public class CategoryController {
 
 
     @PostMapping
-    public Result<Category> addCategory(@RequestBody Category category){
+    public Result<Category> save(@RequestBody Category category) {
         category.setCreateTime(LocalDateTime.now());
         category.setUpdateTime(LocalDateTime.now());
+        if (category.getParentId() == null) {
+            category.setParentId(1L);
+        }
         categoryService.insertCategory(category);
         return Result.success(category);
     }
 
+    @PutMapping
+    public Result<Category> edit(@RequestBody Category category) {
+        category.setUpdateTime(LocalDateTime.now());
+        categoryService.updateCategory(category);
+        return Result.success(category);
+    }
 
+    @DeleteMapping("/{categoryId}")
+    public Result<String> delete(@PathVariable("categoryId") Long categoryId) {
+        categoryService.deleteCategory(categoryId);
+        return Result.success("删除成功");
+    }
 }

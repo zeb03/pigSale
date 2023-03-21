@@ -14,7 +14,7 @@ public interface UserService {
      * @param id
      * @return
      */
-    User getUserById(Integer id);
+    User getUserById(Long id);
 
     /**
      * 根据name查找用户
@@ -32,7 +32,7 @@ public interface UserService {
     /**
      * 分页查询所有用户
      */
-    PageInfo<User> getUserPage(Integer currentPage, Integer pageSize);
+    PageInfo<User> getUserPage(Integer currentPage, Integer pageSize, Integer role);
 
     /**
      * 修改用户

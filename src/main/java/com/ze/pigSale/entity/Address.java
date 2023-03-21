@@ -7,6 +7,7 @@ import java.io.Serializable;
 /**
  * @TableName address
  */
+
 @Data
 public class Address implements Serializable {
     private Long addressId;

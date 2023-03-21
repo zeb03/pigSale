@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserService {
     private UserMapper userMapper;
 
     @Override
-    public User getUserById(Integer id) {
+    public User getUserById(Long id) {
         return userMapper.getUserById(id);
     }
 
@@ -35,6 +35,7 @@ public class UserServiceImpl implements UserService {
     public User getUserByName(String username) {
         return userMapper.getUserByName(username);
     }
+
 
     @Override
     public void register(User user) {
@@ -51,9 +52,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public PageInfo<User> getUserPage(Integer currentPage, Integer pageSize) {
+    public PageInfo<User> getUserPage(Integer currentPage, Integer pageSize, Integer role) {
         PageHelper.startPage(currentPage, pageSize);
-        List<User> userList = userMapper.getUserList();
+        List<User> userList = userMapper.getUserByRole(role);
         return new PageInfo<>(userList);
     }
 

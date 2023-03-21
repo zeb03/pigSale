@@ -20,22 +20,16 @@ public class LoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         log.info("拦截到请求：{}", request.getRequestURI());
 
-        Long empId = (Long) request.getSession().getAttribute("employee");
-        if (empId != null) {
+        Long user = (Long) request.getSession().getAttribute("user");
+        if (user != null) {
             log.info("线程id: {}", Thread.currentThread().getId());
-            BaseContext.setCurrentId(empId);
+            BaseContext.setCurrentId(user);
             return true;
         }
-
-        Long userId = (Long) request.getSession().getAttribute("user");
-        if (userId != null) {
-            log.info("线程id: {}", Thread.currentThread().getId());
-            BaseContext.setCurrentId(userId);
-            return true;
-        }
-
+//        response.sendRedirect(request.getContextPath() + "/index.html/login.html");
+//        request.getRequestDispatcher("/index.html/login.html").forward(request, response);
         log.info("用户未登录");
-        response.getWriter().write(JSON.toJSONString(Result.error("NOTLOGIN")));
+        response.getWriter().write(JSON.toJSONString(Result.error("not login")));
         return false;
     }
 }

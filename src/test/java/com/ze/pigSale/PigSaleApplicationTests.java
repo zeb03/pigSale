@@ -16,7 +16,7 @@ class PigSaleApplicationTests {
 
     @Test
     void contextLoads() {
-        User user = userService.getUserById(1);
+        User user = userService.getUserById(1L);
         log.info("{}",user);
     }
 
