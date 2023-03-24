@@ -65,11 +65,16 @@ public interface UserMapper {
     void updateUser(User user);
 
     /**
+     * 修改用户和密码
+     * @param user
+     */
+    void updateUserWithPwd(User user);
+
+    /**
      * 删除用户
      * @param userId
      */
     void deleteUser(@Param("userId") Long userId);
-
 }
 
 

@@ -26,6 +26,8 @@ public class Address implements Serializable {
 
     private String detail;
 
+    private Integer isDefault;
+
     private static final long serialVersionUID = 1L;
 
 }

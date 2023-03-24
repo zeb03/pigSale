@@ -26,6 +26,19 @@
     <update id="updateUser">
         update user
         set username = #{username},
+            email    = #{email},
+            phone    = #{phone},
+            `name`   = #{name},
+            gender   = #{gender},
+            birthday = #{birthday},
+            `role`   = #{role},
+            image    = #{image}
+        where user_id = #{userId}
+    </update>
+
+    <update id="updateUserWithPwd">
+        update user
+        set username = #{username},
             password = #{password},
             email    = #{email},
             phone    = #{phone},
@@ -71,10 +84,12 @@
         where username = #{username}
            or phone = #{phone}
     </select>
+
     <select id="getUserList" resultType="User">
         select *
         from user
     </select>
+
     <select id="getUserByRole" resultType="com.ze.pigSale.entity.User">
         select *
         from user

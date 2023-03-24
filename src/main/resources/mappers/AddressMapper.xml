@@ -13,23 +13,38 @@
             <result property="city" column="city" jdbcType="VARCHAR"/>
             <result property="district" column="district" jdbcType="VARCHAR"/>
             <result property="detail" column="detail" jdbcType="VARCHAR"/>
+            <result property="isDefault" column="isDefault" jdbcType="INTEGER"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         address_id,user_id,recipient_name,
         recipient_phone,province,city,
-        district,detail
+        district,detail,isDefault
     </sql>
+
+    <select id="getAddressListByUserId" resultType="address">
+        select *
+        from address
+        where user_id = #{userId}
+    </select>
 
     <insert id="insertAddress" useGeneratedKeys="true" keyProperty="addressId">
         insert into address
-        values (null, #{userId}, #{recipientName}, #{recipientPhone}, #{province}, #{city}, #{district}, #{detail})
+        values (null, #{userId}, #{recipientName}, #{recipientPhone}, #{province}, #{city}, #{district}, #{detail}, #{isDefault})
+    </insert>
+
+    <insert id="insertBatch">
+        insert into address values
+        <foreach collection="list" separator="," item="item">
+            (null, #{item.userId}, #{item.recipientName}, #{item.recipientPhone}, #{item.province}, #{item.city}, #{item.district}, #{item.detail}, #{item.isDefault})
+        </foreach>
     </insert>
 
     <update id="updateAddress">
         update address
-        set user_id = #{userId}, recipient_name = #{recipientName}, recipient_phone = #{recipientPhone},
-            province = #{province}, city = #{city}, district = #{district}, detail = #{detail}
+        set recipient_name = #{recipientName}, recipient_phone = #{recipientPhone},
+            province = #{province}, city = #{city}, district = #{district}, detail = #{detail}, isDefault = #{isDefault}
+        where user_id = #{userId}
     </update>
 
     <delete id="deleteAddress">
@@ -37,9 +52,6 @@
         where address_id = #{addressId}
     </delete>
 
-    <select id="getAddressList" resultType="com.ze.pigSale.entity.Address">
-        select *
-        from address
-    </select>
+
 
 </mapper>

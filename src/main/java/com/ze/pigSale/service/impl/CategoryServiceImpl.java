@@ -1,6 +1,8 @@
 package com.ze.pigSale.service.impl;
 
+import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.entity.Category;
+import com.ze.pigSale.entity.User;
 import com.ze.pigSale.mapper.CategoryMapper;
 import com.ze.pigSale.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,10 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void deleteCategory(Long categoryId) {
+        Category category = categoryMapper.getCategoryById(categoryId);
+        if (category == null){
+            throw new CustomException("该种类不存在");
+        }
         categoryMapper.deleteCategory(categoryId);
     }
 }

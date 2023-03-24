@@ -39,10 +39,10 @@ public class MyWebConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/user/login",
-                        "/index.html/login.html",
-                        "to/login",
-                        "/user/logout",
-                        "user/register",
+                        "/user/register",
+                        "/index.html",
+                        "/category/list",
+                        "/product/page",
                         "/common/**",
                         "/js/**",
                         "/css/**",
@@ -64,8 +64,9 @@ public class MyWebConfig implements WebMvcConfigurer {
         //添加映射
         log.info("映射资源开始");
         registry.addResourceHandler("doc.html").addResourceLocations("classpath:/META-INF/resources/");
-//        registry.addResourceHandler("/").addResourceLocations("classpath:/META-INF/resources/");
+        registry.addResourceHandler("/").addResourceLocations("classpath:/META-INF/resources/");
         registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
+        registry.addResourceHandler("/**").addResourceLocations("classpath:/static/");
     }
 
     @Override

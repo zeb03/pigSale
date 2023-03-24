@@ -1,13 +1,11 @@
 package com.ze.pigSale.service.impl;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
-import com.github.pagehelper.page.PageMethod;
 import com.ze.pigSale.entity.Address;
 import com.ze.pigSale.mapper.AddressMapper;
 import com.ze.pigSale.service.AddressService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,6 +13,7 @@ import java.util.List;
  * author: zebii
  * Date: 2023-03-21-10:12
  */
+
 @Service
 public class AddressServiceImpl implements AddressService {
 
@@ -22,13 +21,22 @@ public class AddressServiceImpl implements AddressService {
     private AddressMapper addressMapper;
 
     @Override
-    public List<Address> getAddressList() {
-        return addressMapper.getAddressList();
+    public List<Address> getAddressList(Long userId) {
+        return addressMapper.getAddressListByUserId(userId);
     }
 
     @Override
     public void insertAddress(Address address) {
         addressMapper.insertAddress(address);
+    }
+
+    @Override
+    @Transactional
+    public void insertBatch(List<Address> addressList, Long userId) {
+        for (Address address : addressList) {
+            address.setUserId(userId);
+        }
+        addressMapper.insertBatch(addressList);
     }
 
     @Override

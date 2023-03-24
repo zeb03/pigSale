@@ -2,6 +2,7 @@ package com.ze.pigSale.controller;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.Result;
 import com.ze.pigSale.entity.User;
 import com.ze.pigSale.service.UserService;
@@ -12,6 +13,7 @@ import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 
 /**
  * author: zebii
@@ -70,6 +72,18 @@ public class UserController {
         return Result.success("添加成功");
     }
 
+    /**
+     * 退出登录
+     * @param request
+     * @return
+     */
+    @PostMapping("/out")
+    public Result<String> loginOut(HttpServletRequest request) {
+        //清理Session中保存的当前用户登录的id
+        request.getSession().removeAttribute("user");
+        return Result.success("退出成功");
+    }
+
 
     /**
      * 管理员注册
@@ -98,6 +112,13 @@ public class UserController {
         return Result.success(userPage);
     }
 
+    @GetMapping()
+    public Result<User> getOne() {
+        Long userId = BaseContext.getCurrentId();
+        User user = userService.getUserById(userId);
+        return Result.success(user);
+    }
+
     /**
      * 修改用户
      *
@@ -105,14 +126,19 @@ public class UserController {
      * @return
      */
     @PutMapping
-    public Result<User> edit(@RequestBody User user, Long updateUser) {
-        User role = userService.getUserById(updateUser);
-        if ("admin".equals(role.getUsername())) {
-            userService.updateUser(user);
-            return Result.success(user);
-        } else {
-            return Result.error("无权限");
+    public Result<User> edit(@RequestBody User user) {
+        Long currentId = BaseContext.getCurrentId();
+        User currentUser = userService.getUserById(currentId);
+        if (currentUser == null) {
+            return Result.error("当前用户没有登录");
         }
+
+        if (!"admin".equals(currentUser.getUsername()) && !Objects.equals(currentUser.getUserId(), user.getUserId())) {
+            return Result.error("当前用户没有权限");
+        }
+
+        userService.updateUser(user);
+        return Result.success(user);
     }
 
     /**
@@ -122,8 +148,10 @@ public class UserController {
      * @return
      */
     @DeleteMapping("/{userId}")
-    public Result<String> remove(@PathVariable("userId") Long userId) {
-        userService.deleteUser(userId);
+    public Result<String> remove(@PathVariable("userId") String userId) {
+        userService.deleteUser(Long.parseLong(userId));
         return Result.success("删除成功");
     }
+
+
 }

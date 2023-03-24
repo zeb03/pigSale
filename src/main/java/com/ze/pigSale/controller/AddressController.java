@@ -1,5 +1,6 @@
 package com.ze.pigSale.controller;
 
+import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.Result;
 import com.ze.pigSale.entity.Address;
 import com.ze.pigSale.service.AddressService;
@@ -21,26 +22,36 @@ public class AddressController {
     @Autowired
     private AddressService addressService;
 
-    @GetMapping("/list")
-    public Result<List<Address>> list(){
-        List<Address> addressList = addressService.getAddressList();
+    @GetMapping()
+    public Result<List<Address>> list() {
+        Long userId = BaseContext.getCurrentId();
+        log.info("查看地址userId:{}", userId);
+        List<Address> addressList = addressService.getAddressList(userId);
         return Result.success(addressList);
     }
 
-    @PostMapping
-    public Result<Address> add(@RequestBody Address address){
-        addressService.insertAddress(address);
-        return Result.success(address);
+
+    @PostMapping()
+    public Result<String> add(@RequestBody List<Address> addressList) {
+        Long userId = BaseContext.getCurrentId();
+        log.info("添加地址userId:{}", userId);
+        addressList.forEach(address -> address.setUserId(userId));
+        addressList.forEach(address -> addressService.insertAddress(address));
+//        addressService.insertBatch(addressList,userId);
+        return Result.success("添加成功");
     }
 
-    @PutMapping
-    public Result<Address> edit(@RequestBody Address address){
+    @PutMapping()
+    public Result<Address> edit(@RequestBody Address address) {
+        Long userId = BaseContext.getCurrentId();
+        log.info("编辑地址userId:{}", userId);
+        address.setUserId(userId);
         addressService.updateAddress(address);
         return Result.success(address);
     }
 
     @DeleteMapping("/{addressId}")
-    public Result<String> remove(@PathVariable("addressId") Long addressId){
+    public Result<String> remove(@PathVariable("addressId") Long addressId) {
         addressService.deleteAddress(addressId);
         return Result.success("删除成功");
     }

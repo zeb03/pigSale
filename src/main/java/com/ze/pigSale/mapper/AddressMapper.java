@@ -19,13 +19,19 @@ public interface AddressMapper {
      * 查询所有的address
      * @return
      */
-    List<Address> getAddressList();
+    List<Address> getAddressListByUserId(@Param("userId") Long userId);
 
     /**
      * 插入address
      * @param address
      */
     void insertAddress(Address address);
+
+    /**
+     * 批量插入
+     * @param addressList
+     */
+    void insertBatch(List<Address> addressList);
 
     /**
      * 修改address

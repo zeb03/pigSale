@@ -2,6 +2,8 @@ package com.ze.pigSale.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.github.pagehelper.page.PageMethod;
+import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
 import com.ze.pigSale.entity.User;
 import com.ze.pigSale.mapper.UserMapper;
@@ -43,7 +45,7 @@ public class UserServiceImpl implements UserService {
 
         User userResult = userMapper.getUserByPhoneOrName(user.getUsername(), user.getPhone());
         if (userResult != null) {
-            Result.error("用户名或手机号已被注册！");
+            throw new CustomException("用户名或手机号已被注册！");
         }
 
         user.setPassword(DigestUtils.md5DigestAsHex(user.getPassword().getBytes()));
@@ -53,18 +55,28 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PageInfo<User> getUserPage(Integer currentPage, Integer pageSize, Integer role) {
-        PageHelper.startPage(currentPage, pageSize);
+        PageMethod.startPage(currentPage, pageSize);
         List<User> userList = userMapper.getUserByRole(role);
         return new PageInfo<>(userList);
     }
 
     @Override
     public void updateUser(User user) {
-        userMapper.updateUser(user);
+        if (user.getPassword() == null || "".equals(user.getPassword())) {
+            userMapper.updateUser(user);
+        } else {
+            user.setPassword(DigestUtils.md5DigestAsHex(user.getPassword().getBytes()));
+            userMapper.updateUserWithPwd(user);
+        }
     }
 
     @Override
     public void deleteUser(Long userId) {
+        User user = userMapper.getUserById(userId);
+        if (user == null) {
+            throw new CustomException("此用户不存在");
+        }
         userMapper.deleteUser(userId);
     }
+
 }

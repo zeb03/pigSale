@@ -27,7 +27,8 @@ public class LoginInterceptor implements HandlerInterceptor {
             return true;
         }
 //        response.sendRedirect(request.getContextPath() + "/index.html/login.html");
-//        request.getRequestDispatcher("/index.html/login.html").forward(request, response);
+//        request.getRequestDispatcher("login.html").forward(request, response);
+        //暂时有问题
         log.info("用户未登录");
         response.getWriter().write(JSON.toJSONString(Result.error("not login")));
         return false;

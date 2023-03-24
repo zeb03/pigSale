@@ -3,6 +3,7 @@ package com.ze.pigSale.entity;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Objects;
@@ -26,7 +27,7 @@ public class User implements Serializable {
 
     private String gender;
 
-    private LocalDateTime birthday;
+    private LocalDate birthday;
 
     private Integer role;
 
