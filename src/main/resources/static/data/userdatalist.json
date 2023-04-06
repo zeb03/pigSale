@@ -1,0 +1,40 @@
+{
+    "code": 200,
+    "msg": null,
+    "data": [
+      {
+        "addressId": "2",
+        "userId": "10",
+        "recipientName": "小勾八赵",
+        "recipientPhone": "10010",
+        "province": "广东省",
+        "city": "广州市",
+        "district": "海珠区",
+        "detail": "8619",
+        "isDefault": 1
+      },
+      {
+        "addressId": "7",
+        "userId": "10",
+        "recipientName": "小赵",
+        "recipientPhone": "12315",
+        "province": "广东省",
+        "city": "广州市",
+        "district": "仲恺农业工程学院",
+        "detail": "8619",
+        "isDefault": null
+      },
+      {
+        "addressId": "8",
+        "userId": "10",
+        "recipientName": "赵某",
+        "recipientPhone": "123152324",
+        "province": "广东省",
+        "city": "广州市",
+        "district": "仲恺农业工程学院海珠校区",
+        "detail": "8619",
+        "isDefault": null
+      }
+    ],
+    "map": {}
+  }

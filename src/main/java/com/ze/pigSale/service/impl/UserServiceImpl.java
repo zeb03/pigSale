@@ -30,7 +30,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserById(Long id) {
-        return userMapper.getUserById(id);
+        User user = userMapper.getUserById(id);
+        user.setPassword(null);
+        return user;
     }
 
     @Override

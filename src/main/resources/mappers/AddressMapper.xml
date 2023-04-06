@@ -28,6 +28,10 @@
         where user_id = #{userId}
     </select>
 
+    <select id="getAddressById" resultType="com.ze.pigSale.entity.Address">
+        select * from address where address_id = #{addressId}
+    </select>
+
     <insert id="insertAddress" useGeneratedKeys="true" keyProperty="addressId">
         insert into address
         values (null, #{userId}, #{recipientName}, #{recipientPhone}, #{province}, #{city}, #{district}, #{detail}, #{isDefault})
@@ -44,7 +48,13 @@
         update address
         set recipient_name = #{recipientName}, recipient_phone = #{recipientPhone},
             province = #{province}, city = #{city}, district = #{district}, detail = #{detail}, isDefault = #{isDefault}
-        where user_id = #{userId}
+        where user_id = #{userId} and address_id = #{addressId}
+    </update>
+
+    <update id="updateIsDefault">
+        update address
+        set isDefault = 0
+        where address_id != #{addressId}
     </update>
 
     <delete id="deleteAddress">

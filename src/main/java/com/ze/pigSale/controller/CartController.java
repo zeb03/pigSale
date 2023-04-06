@@ -3,7 +3,9 @@ package com.ze.pigSale.controller;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.Result;
 import com.ze.pigSale.entity.Cart;
+import com.ze.pigSale.service.CartService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -18,73 +20,64 @@ import java.util.List;
 @RequestMapping("/cart")
 public class CartController {
 
-//    @PostMapping("/add")
-//    public Result<Cart> add(@RequestBody Cart cart) {
-//        log.info("cart: {}", cart);
-//
-//        ShoppingCart cart = shoppingCartService.get(shoppingCart);
-//
-//        if (cart != null) {
-//            //该项已经存在，数量加一
-//            Integer number = cart.getNumber();
-//            cart.setNumber(number + 1);
-//            shoppingCartService.updateById(cart);
-//        } else {
-//            //添加该项
-//            shoppingCart.setNumber(1);
-//            shoppingCart.setCreateTime(LocalDateTime.now());
-//            shoppingCartService.save(shoppingCart);
-//            cart = shoppingCart;
-//        }
-//        return R.success(cart);
-//    }
-//
-//    /**
-//     * 查看购物车
-//     *
-//     * @return
-//     */
-//    @GetMapping("/list")
-//    public R<List<ShoppingCart>> list() {
-//        //获取用户id
-//        Long userId = BaseContext.getCurrentId();
-//        List<ShoppingCart> list = shoppingCartService.listByUser(userId);
-//        return R.success(list);
-//    }
-//
-//
-//    /**
-//     * 清空购物车
-//     *
-//     * @return
-//     */
-//    @DeleteMapping("/clean")
-//    public R<String> clean() {
-//        Long userId = BaseContext.getCurrentId();
-//        shoppingCartService.clean(userId);
-//        return R.success("成功清空购物车");
-//    }
-//
-//    /**
-//     * 减少商品数量
-//     * @param shoppingCart
-//     * @return
-//     */
-//    @PostMapping("/sub")
-//    public R<ShoppingCart> sub(@RequestBody ShoppingCart shoppingCart) {
-//
-//        //获取商品
-//        ShoppingCart cart = shoppingCartService.get(shoppingCart);
-//
-//        Integer number = cart.getNumber();
-//        if (number == 1) {
-//            //数量为1则进行删除
-//            shoppingCartService.removeById(cart.getId());
-//        } else {
-//            cart.setNumber(number - 1);
-//            shoppingCartService.updateById(cart);
-//        }
-//
-//        return R.success(cart);
-//    }
+    @Autowired
+    private CartService cartService;
+
+    @PostMapping("/add")
+    public Result<Cart> add(@RequestBody Cart cart) {
+        log.info("addCart:{}", cart);
+
+        //根据用户id，产品id判断该产品是否已经存在
+        Cart userCart = cartService.getCart(cart.getProductId());
+
+        //若存在，则数量加1，并修改
+        if (userCart != null) {
+            Integer quantity = userCart.getQuantity();
+            userCart.setQuantity(quantity + 1);
+            cartService.updateCartById(userCart);
+        } else {
+            //否则加入购物车
+            cart.setCreateTime(LocalDateTime.now());
+            cartService.addCart(cart);
+            userCart = cart;
+        }
+
+        return Result.success(userCart);
+    }
+
+    @GetMapping("/list")
+    public Result<List<Cart>> list() {
+        //获取用户id
+        Long currentId = BaseContext.getCurrentId();
+        //根据id获取购物车
+        List<Cart> cartList = cartService.getCartListByUser(currentId);
+        return Result.success(cartList);
+    }
+
+
+    @DeleteMapping("/clean")
+    public Result<String> clean() {
+        Long userId = BaseContext.getCurrentId();
+        cartService.cleanCart(userId);
+        return Result.success("清空购物车成功");
+    }
+
+    @PutMapping("/edit")
+    public Result<String> edit(@RequestBody Cart cart) {
+        log.info("subCart:{}", cart);
+        //获取商品
+        Cart userCart = cartService.getCart(cart.getProductId());
+        Integer quantity = cart.getQuantity();
+        userCart.setQuantity(quantity);
+
+        if (quantity == 0) {
+            //移除
+            cartService.deleteCart(userCart);
+        } else {
+            cartService.updateCartById(userCart);
+        }
+
+        return Result.success("修改成功");
+    }
+
 }

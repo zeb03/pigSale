@@ -1,0 +1,17 @@
+{
+    "code": 200,
+    "msg": null,
+    "data": {
+      "userId": "16",
+      "username": "杨某",
+      "password": "e7e63638292be5d7b2975a6b0a45f36b",
+      "email": "5775790379@qq.com",
+      "phone": "1231444565",
+      "name": null,
+      "gender": "0",
+      "birthday": null,
+      "role": 0,
+      "image": "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg"
+    },
+    "map": {}
+  }

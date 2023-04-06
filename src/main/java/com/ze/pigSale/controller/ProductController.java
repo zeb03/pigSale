@@ -4,6 +4,7 @@ package com.ze.pigSale.controller;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
 import com.ze.pigSale.dto.ProductDto;
 import com.ze.pigSale.entity.Category;
@@ -35,12 +36,6 @@ public class ProductController {
     private CategoryService categoryService;
 
 
-    /**
-     * 获取产品及种类
-     *
-     * @param productDto
-     * @return
-     */
     @GetMapping
     public Result<ProductDto> getOne(ProductDto productDto) {
         log.info("ProductDto：{}", productDto);
@@ -55,6 +50,27 @@ public class ProductController {
             BeanUtils.copyProperties(product, productDto);
         }
         log.info("ProductDto：{}", productDto);
+        return Result.success(productDto);
+    }
+
+    @GetMapping("/{productId}")
+    public Result<ProductDto> detail(@PathVariable("productId") Long productId){
+        //获取商品
+        Product product = productService.getProductById(productId);
+
+        if (product == null) {
+            throw new CustomException("无法获取商品，商品id错误");
+        }
+
+        //创建dto并复制属性
+        ProductDto productDto = new ProductDto();
+        BeanUtils.copyProperties(product,productDto);
+
+        //根据类别id获取名称并赋值
+        Category category = categoryService.getCategoryById(productDto.getCategoryId());
+        if (category != null) {
+            productDto.setCategoryName(category.getCategoryName());
+        }
         return Result.success(productDto);
     }
 
@@ -122,11 +138,16 @@ public class ProductController {
     @PutMapping
     public Result<Product> edit(@RequestBody Product product) {
         log.info("updateProduct: {}", product);
-        product.setUpdateTime(LocalDateTime.now());
+
         productService.updateProduct(product);
         return Result.success(product);
     }
 
+    /**
+     * 移除商品
+     * @param productId
+     * @return
+     */
     @DeleteMapping("/{productId}")
     public Result<String> delete(@PathVariable("productId") Long productId) {
         productService.deleteProduct(productId);

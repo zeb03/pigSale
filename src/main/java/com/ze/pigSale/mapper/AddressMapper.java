@@ -22,6 +22,13 @@ public interface AddressMapper {
     List<Address> getAddressListByUserId(@Param("userId") Long userId);
 
     /**
+     * 根据id获取地址
+     * @param addressId
+     * @return
+     */
+    Address getAddressById(@Param("addressId") Long addressId);
+
+    /**
      * 插入address
      * @param address
      */
@@ -45,6 +52,11 @@ public interface AddressMapper {
      */
     void deleteAddress(@Param("addressId") Long addressId);
 
+    /**
+     * 将其他默认地址取消
+     * @param address
+     */
+    void updateIsDefault(Address address);
 }
 
 

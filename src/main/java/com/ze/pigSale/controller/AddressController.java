@@ -32,11 +32,11 @@ public class AddressController {
 
 
     @PostMapping()
-    public Result<String> add(@RequestBody List<Address> addressList) {
+    public Result<String> add(@RequestBody Address address) {
         Long userId = BaseContext.getCurrentId();
         log.info("添加地址userId:{}", userId);
-        addressList.forEach(address -> address.setUserId(userId));
-        addressList.forEach(address -> addressService.insertAddress(address));
+        address.setUserId(userId);
+        addressService.insertAddress(address);
 //        addressService.insertBatch(addressList,userId);
         return Result.success("添加成功");
     }
@@ -45,6 +45,7 @@ public class AddressController {
     public Result<Address> edit(@RequestBody Address address) {
         Long userId = BaseContext.getCurrentId();
         log.info("编辑地址userId:{}", userId);
+        log.info("编辑地址: {}", address);
         address.setUserId(userId);
         addressService.updateAddress(address);
         return Result.success(address);

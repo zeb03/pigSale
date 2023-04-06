@@ -1,0 +1,37 @@
+{
+    "code": 200,
+    "msg": null,
+    "data": [
+        {
+            "cartId": "1",
+            "userId": "1",
+            "productId": "8",
+            "quantity": 1,
+            "name": "小猪",
+            "image": "785847688769578",
+            "createTime": null,
+            "amount": 20.00
+        },
+        {
+            "cartId": "2",
+            "userId": "1",
+            "productId": "7",
+            "quantity": 1,
+            "name": "黑猪",
+            "image": "785847688769578",
+            "createTime": null,
+            "amount": 20.00
+        },
+        {
+            "cartId": "3",
+            "userId": "1",
+            "productId": "9",
+            "quantity": 5,
+            "name": "猪",
+            "image": "785847688769578",
+            "createTime": "2023-03-31 17:10:29",
+            "amount": 20.00
+        }
+    ],
+    "map": {}
+}

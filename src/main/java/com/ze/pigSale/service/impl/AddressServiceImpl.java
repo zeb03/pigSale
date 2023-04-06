@@ -26,6 +26,11 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
+    public Address getAddressById(Long addressId) {
+        return addressMapper.getAddressById(addressId);
+    }
+
+    @Override
     public void insertAddress(Address address) {
         addressMapper.insertAddress(address);
     }
@@ -41,7 +46,11 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public void updateAddress(Address address) {
+        if (address.getIsDefault() == 1){
+            addressMapper.updateIsDefault(address);
+        }
         addressMapper.updateAddress(address);
+
     }
 
     @Override

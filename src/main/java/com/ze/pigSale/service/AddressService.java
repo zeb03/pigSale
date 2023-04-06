@@ -20,6 +20,13 @@ public interface AddressService {
     List<Address> getAddressList(Long userId);
 
     /**
+     * 根据id获取地址
+     * @param addressId
+     * @return
+     */
+    Address getAddressById(Long addressId);
+
+    /**
      * 插入address
      * @param address
      */

@@ -1,14 +1,18 @@
 package com.ze.pigSale.service.impl;
 
+import com.ze.pigSale.entity.Cart;
 import com.ze.pigSale.entity.Product;
 import com.ze.pigSale.mapper.CategoryProductMapper;
 import com.ze.pigSale.mapper.ProductMapper;
+import com.ze.pigSale.service.CartService;
 import com.ze.pigSale.service.ProductService;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -20,12 +24,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ProductMapper productMapper;
+
     @Autowired
-    private CategoryProductMapper categoryProductMapper;
+    private CartService cartService;
 
     @Override
     public Product getProductById(Long id) {
-        return null;
+        return productMapper.getProductById(id);
     }
 
     @Override
@@ -47,7 +52,20 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void updateProduct(Product product) {
+        product.setUpdateTime(LocalDateTime.now());
         productMapper.updateProduct(product);
+
+        //若购物车存在该商品，则也要进行修改
+        Cart cart = cartService.getCart(product.getProductId());
+        if (cart != null){
+            String productName = product.getProductName();
+            BigDecimal price = product.getPrice();
+            String image = product.getImage();
+            cart.setAmount(price);
+            cart.setName(productName);
+            cart.setImage(image);
+            cartService.updateCartById(cart);
+        }
     }
 
     @Override

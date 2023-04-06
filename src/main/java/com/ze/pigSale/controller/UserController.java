@@ -92,7 +92,7 @@ public class UserController {
      * @return
      */
     @PostMapping
-    public Result<User> add(@RequestBody User user) {
+    public Result<User> addAdmin(@RequestBody User user) {
         user.setRole(1);
         userService.register(user);
         return Result.success(user);
@@ -112,8 +112,13 @@ public class UserController {
         return Result.success(userPage);
     }
 
+    /**
+     * 查看用户信息
+     * @param
+     * @return
+     */
     @GetMapping()
-    public Result<User> getOne() {
+    public Result<User> queryUser() {
         Long userId = BaseContext.getCurrentId();
         User user = userService.getUserById(userId);
         return Result.success(user);
@@ -126,9 +131,10 @@ public class UserController {
      * @return
      */
     @PutMapping
-    public Result<User> edit(@RequestBody User user) {
+    public Result<User> editUser(@RequestBody User user) {
         Long currentId = BaseContext.getCurrentId();
         User currentUser = userService.getUserById(currentId);
+
         if (currentUser == null) {
             return Result.error("当前用户没有登录");
         }
@@ -148,7 +154,7 @@ public class UserController {
      * @return
      */
     @DeleteMapping("/{userId}")
-    public Result<String> remove(@PathVariable("userId") String userId) {
+    public Result<String> removeUser(@PathVariable("userId") String userId) {
         userService.deleteUser(Long.parseLong(userId));
         return Result.success("删除成功");
     }
