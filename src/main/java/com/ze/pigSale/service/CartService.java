@@ -51,8 +51,15 @@ public interface CartService {
     void cleanCart(Long userId);
 
     /**
-     *
+     * 删除购物车
      * @param cart
      */
     void deleteCart(Cart cart);
+
+    /**
+     * 删除购物车
+     * @param ids
+     */
+    void deleteBatch(List<Long> ids);
+
 }

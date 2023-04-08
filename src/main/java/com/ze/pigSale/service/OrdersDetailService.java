@@ -15,5 +15,12 @@ public interface OrdersDetailService {
      * @param orderDetails
      */
     void saveBatch(List<OrderDetail> orderDetails);
+
+    /**
+     * 获取某订单详情
+     * @param OrderId
+     * @return
+     */
+    List<OrderDetail> getListByOrderId(Long OrderId);
 }
 

@@ -32,7 +32,8 @@
             gender   = #{gender},
             birthday = #{birthday},
             `role`   = #{role},
-            image    = #{image}
+            image    = #{image},
+            status   = #{status}
         where user_id = #{userId}
     </update>
 
@@ -46,7 +47,8 @@
             gender   = #{gender},
             birthday = #{birthday},
             `role`   = #{role},
-            image    = #{image}
+            image    = #{image},
+            status   = #{status}
         where user_id = #{userId}
     </update>
 
@@ -73,16 +75,17 @@
 
     <!-- void insertUser(User user); -->
     <insert id="insertUser" useGeneratedKeys="true" keyProperty="userId">
-        insert into user(username, password, email, phone, role)
-        values (#{username}, #{password}, #{email}, #{phone}, #{role})
+        insert into user(username, password, email, phone, role, status)
+        values (#{username}, #{password}, #{email}, #{phone}, #{role}, #{status})
     </insert>
 
-    <!-- User getUserByPhoneOrName(@Param("phone") String phone, @Param("username") String username); -->
-    <select id="getUserByPhoneOrName" resultType="User">
+    <!-- User getUserByUsernameOrPhone(User); -->
+    <select id="getUserByUsernameOrPhone" resultType="User">
         select *
         from user
-        where username = #{username}
-           or phone = #{phone}
+        where status != 3
+        and username = #{username}
+        or phone = #{phone}
     </select>
 
     <select id="getUserList" resultType="User">

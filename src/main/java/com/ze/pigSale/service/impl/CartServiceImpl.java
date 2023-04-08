@@ -63,4 +63,9 @@ public class CartServiceImpl implements CartService {
     public void deleteCart(Cart cart) {
         cartMapper.deleteById(cart);
     }
+
+    @Override
+    public void deleteBatch(List<Long> ids) {
+        cartMapper.deleteBatch(ids);
+    }
 }

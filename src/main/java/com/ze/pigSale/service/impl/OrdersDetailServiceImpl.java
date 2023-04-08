@@ -21,4 +21,9 @@ public class OrdersDetailServiceImpl implements OrdersDetailService {
     public void saveBatch(List<OrderDetail> orderDetails) {
         orderDetailMapper.saveBatch(orderDetails);
     }
+
+    @Override
+    public List<OrderDetail> getListByOrderId(Long orderId) {
+        return orderDetailMapper.getListByOrderId(orderId);
+    }
 }

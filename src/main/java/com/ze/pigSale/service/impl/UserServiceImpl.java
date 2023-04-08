@@ -43,9 +43,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void register(User user) {
+        user.setRole(0);
         log.info("注册信息：{}", user);
 
-        User userResult = userMapper.getUserByPhoneOrName(user.getUsername(), user.getPhone());
+        User userResult = userMapper.getUserByUsernameOrPhone(user);
         if (userResult != null) {
             throw new CustomException("用户名或手机号已被注册！");
         }

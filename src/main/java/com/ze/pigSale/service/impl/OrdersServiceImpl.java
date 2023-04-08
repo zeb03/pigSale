@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,8 +46,16 @@ public class OrdersServiceImpl implements OrdersService {
     @Autowired
     private OrdersDetailService ordersDetailService;
 
+    @Autowired
+    private ProductService productService;
+
     @Override
-    public PageInfo<OrdersDto> getPageWithDetail(Integer currentPage, Integer pageSize, Long ordersId, LocalDateTime beginTime, LocalDateTime endTime) {
+    public Orders getById(Long ordersId) {
+        return ordersMapper.getById(ordersId);
+    }
+
+    @Override
+    public PageInfo<OrdersDto> getPageWithDetail(int currentPage, int pageSize, Long ordersId, LocalDateTime beginTime, LocalDateTime endTime) {
         //开启分页
         PageMethod.startPage(currentPage, pageSize);
 
@@ -63,6 +72,10 @@ public class OrdersServiceImpl implements OrdersService {
         List<OrdersDto> ordersDtos = orders.stream().map(item -> {
             OrdersDto ordersDto = new OrdersDto();
             BeanUtils.copyProperties(item, ordersDto);
+
+            List<OrderDetail> orderDetails = ordersDetailService.getListByOrderId(item.getId());
+            ordersDto.setOrderDetails(orderDetails);
+
             String name = "用户" + item.getUserId();
             ordersDto.setUserName(name);
             return ordersDto;
@@ -85,40 +98,45 @@ public class OrdersServiceImpl implements OrdersService {
         Long addressId = ordersDto.getAddressId();
         Address address = addressService.getAddressById(addressId);
         if (address == null) {
-            throw new CustomException("用户地址信息有误，不能下单");
+            throw new CustomException("地址不存在");
         }
 
-        //获取商品信息
-//        List<Cart> cartList = cartService.getCartList(userId);
-//        if (cartList == null || cartList.isEmpty()) {
-//            throw new CustomException("购物车为空，不能下单");
-//        }
-        if (ordersDto.getCartItemIds() == null || ordersDto.getCartItemIds().isEmpty()) {
+        //获取购买商品
+        List<Long> cartItemIds = ordersDto.getCartItemIds();
+        if (cartItemIds == null || cartItemIds.isEmpty()) {
             throw new CustomException("请选择商品");
         }
-        List<Long> cartItemIds = ordersDto.getCartItemIds();
+
         List<Cart> cartList = cartService.getCartListByIds(cartItemIds);
-        if (cartList == null || cartList.isEmpty()){
-            throw new CustomException("无法下单，商品id错误");
+        if (cartList == null || cartList.isEmpty()) {
+            throw new CustomException("商品不存在");
         }
 
-        //设置订单明细信息和计算总金额
-//        AtomicInteger amount = new AtomicInteger(0);
-        BigDecimal amount = new BigDecimal(0);
+        //设置订单id
         SnowFlake idWorker = new SnowFlake(0, 0);
         ordersDto.setId(idWorker.nextId());
 
+        //计算总金额
+        BigDecimal amount = new BigDecimal(0);
         for (Cart cart : cartList) {
             amount = amount.add(cart.getAmount().multiply(new BigDecimal(cart.getQuantity())));
         }
 
+        //设置订单明细信息
         List<OrderDetail> orderDetails = cartList.stream().map(item -> {
+            //获取商品，判断商品库存是否足够
+            Long productId = item.getProductId();
+            Product product = productService.getProductById(productId);
+            Integer stock = product.getStock();
+            if (stock < item.getQuantity()) {
+                throw new CustomException("提交订单失败, 商品" + product.getProductName() + "库存不足");
+            }
+
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrderId(ordersDto.getId());
             orderDetail.setPrice(item.getAmount());
             orderDetail.setQuantity(item.getQuantity());
             orderDetail.setProductId(item.getProductId());
-//            amount.addAndGet(item.getAmount().multiply(new BigDecimal(item.getQuantity())).intValue());
             return orderDetail;
         }).collect(Collectors.toList());
 
@@ -144,8 +162,122 @@ public class OrdersServiceImpl implements OrdersService {
         ordersMapper.save(ordersDto);
 
         //清空购物车
-//        cartService.cleanCart(userId);
+        cartService.deleteBatch(cartItemIds);
     }
 
+    @Override
+    public PageInfo<OrdersDto> getListByUserId(int currentPage, int pageSize, LocalDateTime beginTime, LocalDateTime endTime) {
+        //开启分页
+        PageMethod.startPage(currentPage, pageSize);
+
+        //查询某用户订单
+        Long userId = BaseContext.getCurrentId();
+        List<Orders> orders = ordersMapper.getListByUserId(userId, beginTime, endTime);
+
+        //获取pageInfo
+        PageInfo<Orders> ordersPageInfo = new PageInfo<>(orders);
+        PageInfo<OrdersDto> ordersDtoPageInfo = new PageInfo<>();
+        BeanUtils.copyProperties(ordersPageInfo, ordersDtoPageInfo);
+
+        //设置订单详情
+        List<OrdersDto> ordersDtos = orders.stream().map(item -> {
+            OrdersDto ordersDto = new OrdersDto();
+            BeanUtils.copyProperties(item, ordersDto);
+
+            List<OrderDetail> orderDetails = ordersDetailService.getListByOrderId(item.getId());
+            ordersDto.setOrderDetails(orderDetails);
+
+            return ordersDto;
+        }).collect(Collectors.toList());
+
+        ordersDtoPageInfo.setList(ordersDtos);
+        return ordersDtoPageInfo;
+    }
+
+    @Override
+    public void updateStatus(Orders orders) {
+        //根据id获取此订单
+        Orders oneOrders = ordersMapper.getById(orders.getId());
+        if (oneOrders == null) {
+            throw new CustomException("无法修改，订单id错误");
+        }
+
+        //修改状态
+        Integer status = orders.getStatus();
+        oneOrders.setStatus(status);
+
+        //根据id修改订单
+        ordersMapper.updateById(oneOrders);
+    }
+
+    @Transactional
+    @Override
+    public void again(Orders orders) {
+        //根据id获取此订单
+        Orders oneOrders = ordersMapper.getById(orders.getId());
+
+        //设置订单id
+        SnowFlake idWorker = new SnowFlake(0, 0);
+        oneOrders.setId(idWorker.nextId());
+        //设置下单时间
+        orders.setCreateTime(LocalDateTime.now());
+        orders.setCheckoutTime(LocalDateTime.now());
+        //设置订单状态
+        orders.setStatus(2);
+
+        //保存此订单
+        ordersMapper.save(oneOrders);
+
+        //查看订单明细
+        List<OrderDetail> orderDetails = ordersDetailService.getListByOrderId(orders.getId());
+
+        //修改订单明细
+        orderDetails = orderDetails.stream().map(item -> {
+            item.setOrderId(oneOrders.getId());
+            return item;
+        }).collect(Collectors.toList());
+
+        //保存订单明细
+        ordersDetailService.saveBatch(orderDetails);
+    }
+
+
+    @Override
+    public void updateById(Orders orders) {
+        ordersMapper.updateById(orders);
+    }
+
+    @Override
+    public void agree(Orders orders) {
+        Orders oneOrders = this.getById(orders.getId());
+        if (oneOrders == null) {
+            throw new CustomException("订单id错误");
+        }
+        oneOrders.setStatus(6);
+        this.updateById(oneOrders);
+    }
+
+    @Override
+    public void disagree(Orders orders, HttpServletRequest request) {
+        //获取订单
+        Orders oneOrders = this.getById(orders.getId());
+        if (oneOrders == null) {
+            throw new CustomException("订单id错误");
+        }
+
+        //获取原先订单状态
+        Object userStatusObj = request.getSession().getAttribute("userStatus");
+
+        //设置订单状态，默认值2
+        int userStatus = 2;
+
+        if (userStatusObj != null) {
+            userStatus = (Integer) userStatusObj;
+        }
+        oneOrders.setStatus(userStatus);
+
+        //修改订单状态
+        this.updateById(oneOrders);
+    }
 
 }

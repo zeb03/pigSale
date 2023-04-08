@@ -33,4 +33,6 @@ public class User implements Serializable {
 
     private String image;
 
+    private Integer status;
+
 }

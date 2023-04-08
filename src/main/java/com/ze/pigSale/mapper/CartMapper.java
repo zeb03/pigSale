@@ -57,10 +57,16 @@ public interface CartMapper {
     void deleteByUserId(@Param("userId") Long userId);
 
     /**
-     *
+     * 根据id删除
      * @param cart
      */
     void deleteById(Cart cart);
+
+    /**
+     * 批量删除
+     * @param ids
+     */
+    void deleteBatch(@Param("ids") List<Long> ids);
 }
 
 

@@ -51,11 +51,10 @@ public interface UserMapper {
 
     /**
      * 通过phone或username查找用户
-     * @param phone
-     * @param username
+     * @param user
      * @return
      */
-    User getUserByPhoneOrName(@Param("phone") String phone, @Param("username") String username);
+    User getUserByUsernameOrPhone(User user);
 
     /**
      * 修改用户

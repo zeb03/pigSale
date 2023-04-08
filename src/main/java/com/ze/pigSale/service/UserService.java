@@ -41,11 +41,11 @@ public interface UserService {
      */
     void updateUser(User user);
 
+
     /**
      * 删除用户
      * @param userId
      */
     void deleteUser(Long userId);
-
 
 }

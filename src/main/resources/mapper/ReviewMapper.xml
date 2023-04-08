@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ze.pigSale.mapper.ReviewMapper">
+
+    <resultMap id="BaseResultMap" type="com.ze.pigSale.entity.Review">
+        <id property="reviewId" column="review_id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="productId" column="product_id" jdbcType="BIGINT"/>
+        <result property="rating" column="rating" jdbcType="INTEGER"/>
+        <result property="comment" column="comment" jdbcType="VARCHAR"/>
+        <result property="image" column="image" jdbcType="VARCHAR"/>
+        <result property="anonymous" column="anonymous" jdbcType="INTEGER"/>
+        <result property="publishTime" column="publish_time" jdbcType="TIMESTAMP"/>
+        <result property="username" column="username" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        review_id
+        ,user_id,product_id,rating,
+        comment,image,anoymous,
+        publish_time,username
+    </sql>
+
+    <insert id="add">
+        insert into review
+        values (null, #{userId}, #{productId}, #{rating}, #{comment}, #{image}, #{anonymous}, #{publishTime},
+                #{username})
+    </insert>
+
+    <update id="updateById">
+        update review
+        set rating    = #{rating},
+            comment   = #{comment},
+            image     = #{image},
+            anonymous = #{anonymous}
+        where review_id = #{reviewId}
+    </update>
+
+    <delete id="deleteById">
+        delete
+        from review
+        where review_id = #{reviewId}
+    </delete>
+
+    <select id="getReviewListByUser" resultType="com.ze.pigSale.entity.Review">
+        select *
+        from review
+        where user_id = #{userId}
+    </select>
+
+    <select id="getReviewListByProduct" resultType="com.ze.pigSale.entity.Review">
+        select *
+        from review
+        where product_id = #{productId}
+    </select>
+</mapper>

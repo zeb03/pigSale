@@ -44,6 +44,15 @@
         where user_id = #{userId}
     </delete>
 
+    <delete id="deleteBatch">
+        delete
+        from cart
+        where cart_id in
+        <foreach collection="ids" open="(" close=")" separator="," item="cartId">
+            #{cartId}
+        </foreach>
+    </delete>
+
     <delete id="deleteById">
         delete
         from cart
