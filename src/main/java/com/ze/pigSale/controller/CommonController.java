@@ -25,6 +25,7 @@ public class CommonController {
     @Value("${pigSale.path}")
     private String basePath;
 
+
     @PostMapping("/upload")
     public String upload(MultipartFile file) {
         try {

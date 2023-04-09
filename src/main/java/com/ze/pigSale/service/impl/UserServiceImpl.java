@@ -1,13 +1,17 @@
 package com.ze.pigSale.service.impl;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
 import com.ze.pigSale.entity.User;
 import com.ze.pigSale.mapper.UserMapper;
+import com.ze.pigSale.service.UserPermissionService;
 import com.ze.pigSale.service.UserService;
+import com.ze.pigSale.utils.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * author: zebii
@@ -27,6 +33,12 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private UserPermissionService userPermissionService;
+
+    @Autowired
+    private UserService userService;
 
     @Override
     public User getUserById(Long id) {
@@ -58,13 +70,34 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PageInfo<User> getUserPage(Integer currentPage, Integer pageSize, Integer role) {
+        //判断权限
+        boolean hasPermission = userPermissionService.hasPermission("view_user");
+        if (!hasPermission) {
+            throw new CustomException(CommonUtil.NOT_PERMISSION);
+        }
+
         PageMethod.startPage(currentPage, pageSize);
-        List<User> userList = userMapper.getUserByRole(role);
+        //待完善
+        List<User> userList = null;
+        if (role == 0) {
+            userList = userMapper.getUserByRole();
+        } else {
+            userList = userMapper.getAdminByRole();
+        }
         return new PageInfo<>(userList);
     }
 
     @Override
     public void updateUser(User user) {
+        //判断权限
+        Long userId = BaseContext.getCurrentId();
+        if (!Objects.equals(user.getUserId(), userId)) {
+            boolean hasPermission = userPermissionService.hasPermission("edit_user");
+            if (!hasPermission) {
+                throw new CustomException(CommonUtil.NOT_PERMISSION);
+            }
+        }
+
         if (user.getPassword() == null || "".equals(user.getPassword())) {
             userMapper.updateUser(user);
         } else {
@@ -74,12 +107,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(Long userId) {
-        User user = userMapper.getUserById(userId);
-        if (user == null) {
-            throw new CustomException("此用户不存在");
+    public void deleteUser(HttpServletRequest request, User user) {
+        User oneUser = userService.getUserById(user.getUserId());
+        if (oneUser == null) {
+            throw new CustomException("用户id错误");
         }
-        userMapper.deleteUser(userId);
+
+        //修改用户状态
+        oneUser.setStatus(3);
+        userService.updateUser(oneUser);
+
+        //清除数据
+        request.getSession().removeAttribute("user");
+        BaseContext.removeThreadLocal();
     }
 
 }

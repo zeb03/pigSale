@@ -3,6 +3,8 @@ package com.ze.pigSale.service;
 import com.github.pagehelper.PageInfo;
 import com.ze.pigSale.entity.User;
 
+import javax.servlet.http.HttpServletRequest;
+
 
 /**
  * author: zebii
@@ -44,8 +46,8 @@ public interface UserService {
 
     /**
      * 删除用户
-     * @param userId
+     * @param user
      */
-    void deleteUser(Long userId);
+    void deleteUser(HttpServletRequest request, User user);
 
 }

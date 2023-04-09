@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
+import com.ze.pigSale.utils.CommonUtil;
 import com.ze.pigSale.utils.SnowFlake;
 import com.ze.pigSale.dto.OrdersDto;
 import com.ze.pigSale.entity.*;
@@ -49,6 +50,9 @@ public class OrdersServiceImpl implements OrdersService {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private UserPermissionService userPermissionService;
+
     @Override
     public Orders getById(Long ordersId) {
         return ordersMapper.getById(ordersId);
@@ -56,6 +60,12 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public PageInfo<OrdersDto> getPageWithDetail(int currentPage, int pageSize, Long ordersId, LocalDateTime beginTime, LocalDateTime endTime) {
+        //判断权限
+        boolean hasPermission = userPermissionService.hasPermission("view_order");
+        if (!hasPermission){
+            throw new CustomException(CommonUtil.NOT_PERMISSION);
+        }
+
         //开启分页
         PageMethod.startPage(currentPage, pageSize);
 
@@ -196,6 +206,12 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public void updateStatus(Orders orders) {
+        //判断权限
+        boolean hasPermission = userPermissionService.hasPermission("edit_order");
+        if (!hasPermission){
+            throw new CustomException(CommonUtil.NOT_PERMISSION);
+        }
+
         //根据id获取此订单
         Orders oneOrders = ordersMapper.getById(orders.getId());
         if (oneOrders == null) {
@@ -249,6 +265,12 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public void agree(Orders orders) {
+        //判断权限
+        boolean hasPermission = userPermissionService.hasPermission("cancel_order");
+        if (!hasPermission){
+            throw new CustomException(CommonUtil.NOT_PERMISSION);
+        }
+
         Orders oneOrders = this.getById(orders.getId());
         if (oneOrders == null) {
             throw new CustomException("订单id错误");
@@ -259,6 +281,12 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public void disagree(Orders orders, HttpServletRequest request) {
+        //判断权限
+        boolean hasPermission = userPermissionService.hasPermission("cancel_order");
+        if (!hasPermission){
+            throw new CustomException(CommonUtil.NOT_PERMISSION);
+        }
+
         //获取订单
         Orders oneOrders = this.getById(orders.getId());
         if (oneOrders == null) {

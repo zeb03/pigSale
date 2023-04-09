@@ -123,8 +123,7 @@ public class ProductController {
     @PostMapping
     public Result<Product> add(@RequestBody Product product) {
         log.info("addProduct: {}", product);
-        product.setCreateTime(LocalDateTime.now());
-        product.setUpdateTime(LocalDateTime.now());
+
         productService.insertProduct(product);
         return Result.success(product);
     }

@@ -1,5 +1,6 @@
 package com.ze.pigSale.controller;
 
+import com.github.pagehelper.ISelect;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.ze.pigSale.common.BaseContext;
@@ -49,11 +50,11 @@ public class UserController {
             return Result.error("用户名错误");
         }
 
-        if (userResult.getStatus() == 3){
+        if (userResult.getStatus() == 3) {
             return Result.error("该用户不存在");
         }
 
-        if (userResult.getStatus() == 2){
+        if (userResult.getStatus() == 2) {
             return Result.error("该用户已被禁用");
         }
 
@@ -76,7 +77,6 @@ public class UserController {
     @PostMapping("/register")
     public Result<String> register(@RequestBody User user) {
         userService.register(user);
-
         return Result.success("添加成功");
     }
 
@@ -96,31 +96,21 @@ public class UserController {
 
     @DeleteMapping("/remove")
     public Result<String> remove(@RequestBody User user, HttpServletRequest request) {
-        log.info("{}",user);
-        User oneUser = userService.getUserById(user.getUserId());
-        if (oneUser == null){
-            throw new CustomException("用户id错误");
-        }
-
-        //修改用户状态
-        oneUser.setStatus(3);
-        userService.updateUser(oneUser);
-
-        //清除数据
-        request.getSession().removeAttribute("user");
-        BaseContext.removeThreadLocal();
+        log.info("{}", user);
+        userService.deleteUser(request, user);
         return Result.success("成功注销");
     }
 
     /**
      * 管理员注册
-     *
+     * 待完善，可以给管理员各种权限
      * @param user
      * @return
      */
     @PostMapping
     public Result<User> addAdmin(@RequestBody User user) {
         user.setRole(1);
+        user.setStatus(1);
         userService.register(user);
         return Result.success(user);
     }
@@ -160,20 +150,8 @@ public class UserController {
      */
     @PutMapping
     public Result<User> editUser(@RequestBody User user) {
-        Long currentId = BaseContext.getCurrentId();
-        User currentUser = userService.getUserById(currentId);
-
-        if (currentUser == null) {
-            return Result.error("当前用户没有登录");
-        }
-
-        if (!"admin".equals(currentUser.getUsername()) && !Objects.equals(currentUser.getUserId(), user.getUserId())) {
-            return Result.error("当前用户没有权限");
-        }
-
         userService.updateUser(user);
         return Result.success(user);
     }
-
 
 }

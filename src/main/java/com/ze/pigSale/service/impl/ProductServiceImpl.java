@@ -1,12 +1,18 @@
 package com.ze.pigSale.service.impl;
 
+import com.ze.pigSale.common.BaseContext;
+import com.ze.pigSale.common.CustomException;
+import com.ze.pigSale.controller.CommonController;
 import com.ze.pigSale.entity.Cart;
 import com.ze.pigSale.entity.Product;
-import com.ze.pigSale.mapper.CategoryProductMapper;
+import com.ze.pigSale.entity.User;
+import com.ze.pigSale.entity.UserPermissions;
 import com.ze.pigSale.mapper.ProductMapper;
 import com.ze.pigSale.service.CartService;
 import com.ze.pigSale.service.ProductService;
-import org.apache.ibatis.annotations.Param;
+import com.ze.pigSale.service.UserPermissionService;
+import com.ze.pigSale.service.UserService;
+import com.ze.pigSale.utils.CommonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +34,13 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private CartService cartService;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private UserPermissionService userPermissionService;
+
+
     @Override
     public Product getProductById(Long id) {
         return productMapper.getProductById(id);
@@ -44,20 +57,33 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-//    @Transactional
     public void insertProduct(Product product) {
+        //判断权限
+        boolean hasPermission = userPermissionService.hasPermission("add_product");
+        if (!hasPermission){
+            throw new CustomException(CommonUtil.NOT_PERMISSION);
+        }
+
+        product.setCreateTime(LocalDateTime.now());
+        product.setUpdateTime(LocalDateTime.now());
         productMapper.insertProduct(product);
-//        categoryProductMapper.insert(product);
     }
 
     @Override
+    @Transactional
     public void updateProduct(Product product) {
+        //判断权限
+        boolean hasPermission = userPermissionService.hasPermission("edit_product");
+        if (!hasPermission){
+            throw new CustomException(CommonUtil.NOT_PERMISSION);
+        }
+
         product.setUpdateTime(LocalDateTime.now());
         productMapper.updateProduct(product);
 
         //若购物车存在该商品，则也要进行修改
         Cart cart = cartService.getCart(product.getProductId());
-        if (cart != null){
+        if (cart != null) {
             String productName = product.getProductName();
             BigDecimal price = product.getPrice();
             String image = product.getImage();
@@ -70,6 +96,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void deleteProduct(Long productId) {
+        //判断权限
+        boolean hasPermission = userPermissionService.hasPermission("delete_product");
+        if (!hasPermission){
+            throw new CustomException(CommonUtil.NOT_PERMISSION);
+        }
         productMapper.deleteProduct(productId);
     }
 }

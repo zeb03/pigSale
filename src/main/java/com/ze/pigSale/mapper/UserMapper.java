@@ -31,10 +31,15 @@ public interface UserMapper {
 
     /**
      * 通过role查找用户
-     * @param role
      * @return
      */
-    List<User> getUserByRole(@Param("role") Integer role);
+    List<User> getUserByRole();
+
+    /**
+     * 通过role查找用户
+     * @return
+     */
+    List<User> getAdminByRole();
 
     /**
      * 查询所有用户

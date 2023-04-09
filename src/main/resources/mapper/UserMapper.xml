@@ -85,7 +85,7 @@
         from user
         where status != 3
         and username = #{username}
-        or phone = #{phone}
+           or phone = #{phone}
     </select>
 
     <select id="getUserList" resultType="User">
@@ -96,7 +96,13 @@
     <select id="getUserByRole" resultType="com.ze.pigSale.entity.User">
         select *
         from user
-        where role = #{role}
+        where role = 0
+    </select>
+
+    <select id="getAdminByRole" resultType="com.ze.pigSale.entity.User">
+        select *
+        from user
+        where role > 1
     </select>
 
 </mapper>
