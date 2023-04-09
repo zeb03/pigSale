@@ -11,6 +11,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
@@ -39,8 +40,12 @@ public class MyWebConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/user/login",
+                        "/page/**",
                         "/user/register",
+                        "/index.html#/login",
                         "/index.html",
+                        "/error",
+                        "/templates/**",
                         "/category/list",
                         "/product/page",
                         "/common/**",
@@ -67,6 +72,7 @@ public class MyWebConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/").addResourceLocations("classpath:/META-INF/resources/");
         registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
         registry.addResourceHandler("/**").addResourceLocations("classpath:/static/");
+//        registry.addResourceHandler("/**").addResourceLocations("classpath:/templates/");
     }
 
     @Override
@@ -75,6 +81,11 @@ public class MyWebConfig implements WebMvcConfigurer {
         messageConverter.setObjectMapper(new JacksonObjectMapper());
         converters.add(0, messageConverter);
     }
+
+//    @Override
+//    public void addViewControllers(ViewControllerRegistry registry) {
+//        registry.addViewController("/page/login").setViewName("/index.html");
+//    }
 
     @Bean
     public Docket createRestApi() {

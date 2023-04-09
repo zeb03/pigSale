@@ -26,11 +26,11 @@ public class LoginInterceptor implements HandlerInterceptor {
             BaseContext.setCurrentId(user);
             return true;
         }
-//        response.sendRedirect(request.getContextPath() + "/index.html/login.html");
-//        request.getRequestDispatcher("login.html").forward(request, response);
         //暂时有问题
         log.info("用户未登录");
         response.getWriter().write(JSON.toJSONString(Result.error("not login")));
+//        request.getRequestDispatcher("/page/login").forward(request, response);
+//        response.sendRedirect("/page/login");
         return false;
     }
 }

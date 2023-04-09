@@ -43,7 +43,7 @@ public class OrdersController {
      * @return
      */
     @GetMapping("admin/page")
-    public Result<PageInfo<OrdersDto>> page(int currentPage, int pageSize, Long ordersId, LocalDateTime beginTime, LocalDateTime endTime) {
+    public Result<PageInfo<OrdersDto>> page(Integer currentPage, Integer pageSize, Long ordersId, LocalDateTime beginTime, LocalDateTime endTime) {
         PageInfo<OrdersDto> pageInfo = ordersService.getPageWithDetail(currentPage, pageSize, ordersId, beginTime, endTime);
         return Result.success(pageInfo);
     }

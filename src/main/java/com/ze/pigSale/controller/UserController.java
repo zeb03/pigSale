@@ -96,6 +96,7 @@ public class UserController {
 
     @DeleteMapping("/remove")
     public Result<String> remove(@RequestBody User user, HttpServletRequest request) {
+        log.info("{}",user);
         User oneUser = userService.getUserById(user.getUserId());
         if (oneUser == null){
             throw new CustomException("用户id错误");
