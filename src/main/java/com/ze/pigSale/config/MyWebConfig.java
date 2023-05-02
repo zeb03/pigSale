@@ -39,17 +39,16 @@ public class MyWebConfig implements WebMvcConfigurer {
         registry.addInterceptor(loginInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns(
-                        "/user/**",
-                        "/role/**",
-                        "/user/page",
-                        "/permissions/**",
-                        "/product/**",
-                        "/review/list/**",
-                        "/review/page",
-                        "/review/remove/**",
-                        "/review/publish",
-                        "/order/detail/review/**",
-
+//                        "/user/**",
+//                        "/role/**",
+//                        "/user/page",
+//                        "/permissions/**",
+//                        "/product/**",
+//                        "/review/list/**",
+//                        "/review/page",
+//                        "/review/remove/**",
+//                        "/review/publish",
+//                        "/order/detail/review/**",
                         "/img/**",
                         "/user/login",
                         "/user/register",
@@ -96,11 +95,6 @@ public class MyWebConfig implements WebMvcConfigurer {
         messageConverter.setObjectMapper(new JacksonObjectMapper());
         converters.add(0, messageConverter);
     }
-
-//    @Override
-//    public void addViewControllers(ViewControllerRegistry registry) {
-//        registry.addViewController("/page/login").setViewName("/index.html");
-//    }
 
     @Bean
     public Docket createRestApi() {

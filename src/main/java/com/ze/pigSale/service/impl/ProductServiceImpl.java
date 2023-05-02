@@ -7,6 +7,7 @@ import com.ze.pigSale.entity.Cart;
 import com.ze.pigSale.entity.Product;
 import com.ze.pigSale.entity.User;
 import com.ze.pigSale.entity.UserPermissions;
+import com.ze.pigSale.enums.PermissionEnum;
 import com.ze.pigSale.mapper.ProductMapper;
 import com.ze.pigSale.service.CartService;
 import com.ze.pigSale.service.ProductService;
@@ -59,7 +60,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void insertProduct(Product product) {
         //判断权限
-        boolean hasPermission = userPermissionService.hasPermission("add_product");
+        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.ADD_PRODUCT);
         if (!hasPermission){
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }
@@ -73,7 +74,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public void updateProduct(Product product) {
         //判断权限
-        boolean hasPermission = userPermissionService.hasPermission("edit_product");
+        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.EDIT_PRODUCT);
         if (!hasPermission){
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }
@@ -97,7 +98,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void deleteProduct(Long productId) {
         //判断权限
-        boolean hasPermission = userPermissionService.hasPermission("delete_product");
+        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.DELETE_PRODUCT);
         if (!hasPermission){
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }

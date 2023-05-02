@@ -8,6 +8,7 @@ import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
 import com.ze.pigSale.entity.User;
+import com.ze.pigSale.enums.PermissionEnum;
 import com.ze.pigSale.mapper.UserMapper;
 import com.ze.pigSale.service.UserPermissionService;
 import com.ze.pigSale.service.UserService;
@@ -89,14 +90,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateUser(User user) {
         //判断权限
-        // TODO
-//        Long userId = BaseContext.getCurrentId();
-//        if (!Objects.equals(user.getUserId(), userId)) {
-//            boolean hasPermission = userPermissionService.hasPermission("edit_user");
-//            if (!hasPermission) {
-//                throw new CustomException(CommonUtil.NOT_PERMISSION);
-//            }
-//        }
+        Long userId = BaseContext.getCurrentId();
+        if (!Objects.equals(user.getUserId(), userId)) {
+            boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.EDIT_USER);
+            if (!hasPermission) {
+                throw new CustomException(CommonUtil.NOT_PERMISSION);
+            }
+        }
 
         if (user.getPassword() == null || "".equals(user.getPassword())) {
             userMapper.updateUser(user);

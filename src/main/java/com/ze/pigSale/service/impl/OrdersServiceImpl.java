@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
+import com.ze.pigSale.enums.PermissionEnum;
 import com.ze.pigSale.utils.CommonUtil;
 import com.ze.pigSale.utils.SnowFlake;
 import com.ze.pigSale.dto.OrdersDto;
@@ -59,7 +60,7 @@ public class OrdersServiceImpl implements OrdersService {
     @Override
     public PageInfo<OrdersDto> getPageWithDetail(int currentPage, int pageSize, Long ordersId, LocalDateTime beginTime, LocalDateTime endTime) {
         //判断权限
-        boolean hasPermission = userPermissionService.hasPermission("view_order");
+        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.VIEW_ORDER);
         if (!hasPermission){
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }
@@ -205,7 +206,7 @@ public class OrdersServiceImpl implements OrdersService {
     @Override
     public void updateStatus(Orders orders) {
         //判断权限
-        boolean hasPermission = userPermissionService.hasPermission("edit_order");
+        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.EDIT_ORDER);
         if (!hasPermission){
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }
@@ -264,7 +265,7 @@ public class OrdersServiceImpl implements OrdersService {
     @Override
     public void agree(Orders orders) {
         //判断权限
-        boolean hasPermission = userPermissionService.hasPermission("cancel_order");
+        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.CANCEL_ORDER);
         if (!hasPermission){
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }
@@ -280,7 +281,7 @@ public class OrdersServiceImpl implements OrdersService {
     @Override
     public void disagree(Orders orders, HttpServletRequest request) {
         //判断权限
-        boolean hasPermission = userPermissionService.hasPermission("cancel_order");
+        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.CANCEL_ORDER);
         if (!hasPermission){
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }

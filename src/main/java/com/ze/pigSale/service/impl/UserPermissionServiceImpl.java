@@ -5,6 +5,7 @@ import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.entity.Permissions;
 import com.ze.pigSale.entity.User;
 import com.ze.pigSale.entity.UserPermissions;
+import com.ze.pigSale.enums.PermissionEnum;
 import com.ze.pigSale.mapper.UserPermissionsMapper;
 import com.ze.pigSale.service.PermissionService;
 import com.ze.pigSale.service.UserPermissionService;
@@ -29,31 +30,21 @@ public class UserPermissionServiceImpl implements UserPermissionService {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private PermissionService permissionService;
-
     @Override
     public List<UserPermissions> getByUserId(Long userId) {
         User user = userService.getUserById(userId);
-        //TODO
-//        User currentUser = userService.getUserById(BaseContext.getCurrentId());
-//        if (currentUser.getUserId() != 1) {
-//            throw new CustomException("无权限");
-//        }
 
         return userPermissionsMapper.getByUserId(user);
     }
 
     @Override
-    public boolean hasPermission(String operation) {
-        // TODO:暂时修改
-//        Long userId = 1L;
+    public boolean hasPermission(PermissionEnum permissionEnum) {
         Long userId = BaseContext.getCurrentId();
         User user = userService.getUserById(userId);
         List<UserPermissions> permissions = this.getByUserId(user.getUserId());
         boolean hasPermission = false;
         for (UserPermissions permission : permissions) {
-            if (operation.equals(permission.getPermissionId().getPermissionName())) {
+            if (permissionEnum == permission.getPermissionId()) {
                 hasPermission = true;
                 break;
             }
@@ -64,9 +55,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
     @Override
     public void addPermission(UserPermissions userPermissions) {
-        // TODO:
-//        Long userId = BaseContext.getCurrentId();
-        Long userId = 1L;
+        Long userId = BaseContext.getCurrentId();
         User user = userService.getUserById(userId);
         if (user.getUserId() != 1) {
             throw new CustomException("无权限");
@@ -96,9 +85,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
     @Transactional
     public void updatePermission(List<UserPermissions> userPermissions) {
         //先删除该用户所有的权限
-//        Long userId = BaseContext.getCurrentId();
-        //TODO:
-        Long userId = 10L;
+        Long userId = BaseContext.getCurrentId();
         userPermissionsMapper.deleteByUser(userId);
         //再添加所选权限
         this.addBatchPermission(userPermissions);

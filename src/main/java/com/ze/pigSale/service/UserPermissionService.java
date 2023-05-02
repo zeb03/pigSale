@@ -2,6 +2,7 @@ package com.ze.pigSale.service;
 
 import com.ze.pigSale.entity.User;
 import com.ze.pigSale.entity.UserPermissions;
+import com.ze.pigSale.enums.PermissionEnum;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ public interface UserPermissionService {
      * @param operation
      * @return
      */
-    boolean hasPermission(String operation);
+    boolean hasPermission(PermissionEnum permissionEnum);
 
     /**
      * 赋予管理员权限

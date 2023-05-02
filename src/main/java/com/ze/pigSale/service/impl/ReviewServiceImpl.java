@@ -36,9 +36,7 @@ public class ReviewServiceImpl implements ReviewService {
     public void addReview(Review review) {
 
         review.setPublishTime(LocalDateTime.now());
-//        Long userId = BaseContext.getCurrentId();
-        //TODO:
-        Long userId = 10L;
+        Long userId = BaseContext.getCurrentId();
         review.setUserId(userId);
         log.info("添加评论信息：{}", review);
         reviewMapper.add(review);
