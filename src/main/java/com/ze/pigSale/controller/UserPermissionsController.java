@@ -41,6 +41,7 @@ public class UserPermissionsController {
      */
     @PostMapping("/add")
     public Result<String> add(@RequestBody UserPermissions userPermissions) {
+        log.info("userPermissions:" + userPermissions);
         userPermissionService.addPermission(userPermissions);
         return Result.success("成功赋予该管理员权限");
     }

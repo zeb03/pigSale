@@ -20,7 +20,7 @@ public interface PermissionService {
      * @param id
      * @return
      */
-    Permissions getById(Long id);
+    Permissions getById(Integer id);
 
     /**
      * 根据role获取权限

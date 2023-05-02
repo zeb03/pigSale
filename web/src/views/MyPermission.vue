@@ -88,17 +88,14 @@
                         rolePermissions: [
                             {
                                 permissionId: "1",
-                                permissionName: "add_product",
                                 description: null
                             },
                             {
                                 permissionId: "2",
-                                permissionName: "edit_product",
                                 description: null
                             },
                             {
                                 permissionId: "3",
-                                permissionName: "delete_product",
                                 description: null
                             }
                         ]

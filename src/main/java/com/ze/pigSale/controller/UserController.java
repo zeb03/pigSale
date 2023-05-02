@@ -130,12 +130,14 @@ public class UserController {
      * @return
      */
     @PostMapping
-    @Transactional()
+    @Transactional
     public Result<User> addAdmin(@RequestBody User user) {
+        log.info("user:" + user);
         user.setStatus(1);
-        if (BaseContext.getCurrentId() != 1) {
-            throw new CustomException("此用户无权限");
-        }
+        //TODO: 判断权限
+//        if (BaseContext.getCurrentId() != 1) {
+//            throw new CustomException("此用户无权限");
+//        }
         userService.register(user);
         List<Permissions> permissions = permissionService.getByRoleId(user.getRole());
         permissions.stream().map(item -> {

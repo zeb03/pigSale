@@ -11,6 +11,7 @@ import com.ze.pigSale.service.UserPermissionService;
 import com.ze.pigSale.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,8 +53,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         List<UserPermissions> permissions = this.getByUserId(user.getUserId());
         boolean hasPermission = false;
         for (UserPermissions permission : permissions) {
-            String permissionName = permission.getPermissionName();
-            if (operation.equals(permissionName)) {
+            if (operation.equals(permission.getPermissionId().getPermissionName())) {
                 hasPermission = true;
                 break;
             }
@@ -70,16 +70,6 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         User user = userService.getUserById(userId);
         if (user.getUserId() != 1) {
             throw new CustomException("无权限");
-        }
-
-        if (userPermissions.getPermissionName() == null || "".equals(userPermissions.getPermissionName())) {
-            //设置权限名称
-            Permissions permissions = permissionService.getById(userPermissions.getPermissionId());
-            if (permissions == null) {
-                throw new CustomException("权限id错误");
-            }
-            String permissionName = permissions.getPermissionName();
-            userPermissions.setPermissionName(permissionName);
         }
 
         userPermissions.setCreatedTime(LocalDateTime.now());
@@ -103,9 +93,12 @@ public class UserPermissionServiceImpl implements UserPermissionService {
     }
 
     @Override
+    @Transactional
     public void updatePermission(List<UserPermissions> userPermissions) {
         //先删除该用户所有的权限
-        Long userId = BaseContext.getCurrentId();
+//        Long userId = BaseContext.getCurrentId();
+        //TODO:
+        Long userId = 10L;
         userPermissionsMapper.deleteByUser(userId);
         //再添加所选权限
         this.addBatchPermission(userPermissions);

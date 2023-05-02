@@ -25,12 +25,12 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    public Permissions getById(Long id) {
+    public Permissions getById(Integer id) {
         return permissionsMapper.getById(id);
     }
 
     @Override
-    public List<Permissions> getByRoleId(Integer RoleId) {
-        return permissionsMapper.getByRoleId(RoleId);
+    public List<Permissions> getByRoleId(Integer roleId) {
+        return permissionsMapper.getByRoleId(roleId);
     }
 }
