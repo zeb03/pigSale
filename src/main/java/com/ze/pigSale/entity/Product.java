@@ -27,6 +27,8 @@ public class Product implements Serializable {
 
     private String origin;
 
+    private Integer sales;
+
     private Integer stock;
 
     private LocalDateTime createTime;

@@ -73,7 +73,7 @@
         where username = #{name}
     </select>
 
-    <!-- void insertUser(User user); -->
+    <!-- Lond insertUser(User user); -->
     <insert id="insertUser" useGeneratedKeys="true" keyProperty="userId">
         insert into user(username, password, email, phone, role, status)
         values (#{username}, #{password}, #{email}, #{phone}, #{role}, #{status})
@@ -96,13 +96,23 @@
     <select id="getUserByRole" resultType="com.ze.pigSale.entity.User">
         select *
         from user
-        where role = 0
+        <where>
+            role = 0
+            <if test="search != null || search == ''">
+                and username like '%${search}%'
+            </if>
+        </where>
     </select>
 
     <select id="getAdminByRole" resultType="com.ze.pigSale.entity.User">
         select *
         from user
-        where role > 1
+        <where>
+            role > 0
+            <if test="search != null || search == ''">
+                and username like '%${search}%'
+            </if>
+        </where>
     </select>
 
 </mapper>

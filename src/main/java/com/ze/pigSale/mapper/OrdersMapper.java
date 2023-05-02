@@ -52,6 +52,13 @@ public interface OrdersMapper {
      * @param orders
      */
     void updateById(Orders orders);
+
+    /**
+     * 获取已经送达但是没有评价的订单
+     * @param userId
+     * @return
+     */
+    List<Orders> getByNoReview(@Param("userId") Long userId);
 }
 
 

@@ -1,6 +1,7 @@
 package com.ze.pigSale.mapper;
 
 import com.ze.pigSale.entity.OrderDetail;
+import com.ze.pigSale.vo.OrderDetailVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -26,6 +27,13 @@ public interface OrderDetailMapper {
      * @return
      */
     List<OrderDetail> getListByOrderId(@Param("orderId") Long orderId);
+
+    /**
+     * 获取已经送达但是没有评价的订单
+     * @param userId
+     * @return
+     */
+    List<OrderDetailVo> getByNoReview(@Param("userId") Long userId);
 }
 
 

@@ -28,6 +28,7 @@ public class CartServiceImpl implements CartService {
         Long userId = BaseContext.getCurrentId();
         log.info("userId:{}", userId);
         cart.setUserId(userId);
+//        cart.setUserId(7L);
         cart.setProductId(productId);
         return cartMapper.getCart(cart);
     }
@@ -51,6 +52,8 @@ public class CartServiceImpl implements CartService {
     public void addCart(Cart cart) {
         Long userId = BaseContext.getCurrentId();
         cart.setUserId(userId);
+        // temp
+//        cart.setUserId(7L);
         cartMapper.save(cart);
     }
 

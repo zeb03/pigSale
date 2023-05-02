@@ -10,6 +10,7 @@ import com.ze.pigSale.mapper.ReviewMapper;
 import com.ze.pigSale.service.ReviewService;
 import com.ze.pigSale.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,21 +36,27 @@ public class ReviewServiceImpl implements ReviewService {
     public void addReview(Review review) {
 
         review.setPublishTime(LocalDateTime.now());
-        Long userId = BaseContext.getCurrentId();
+//        Long userId = BaseContext.getCurrentId();
+        //TODO:
+        Long userId = 10L;
         review.setUserId(userId);
         log.info("添加评论信息：{}", review);
         reviewMapper.add(review);
     }
 
     @Override
-    public PageInfo<Review> getReviewList(Integer currentPage, Integer pageSize, Review review, Integer queryWay) {
+    public PageInfo<Review> getReviewPage(Integer currentPage, Integer pageSize, Review review, Integer queryWay) {
         PageMethod.startPage(currentPage, pageSize);
         List<Review> reviews = null;
         if (queryWay == 1) {
-            reviews = reviewMapper.getReviewListByUser(review);
+            reviews = reviewMapper.getReviewListByUser(review.getUserId());
         } else {
-            reviews = reviewMapper.getReviewListByProduct(review);
+            reviews = reviewMapper.getReviewListByProduct(review.getProductId());
         }
+
+        PageInfo<Review> reviewPageInfo = new PageInfo<>(reviews);
+        PageInfo<Review> pageInfo = new PageInfo<>();
+
         reviews = reviews.stream().map(item ->{
             Long userId = item.getUserId();
             User user = userService.getUserById(userId);
@@ -61,10 +68,21 @@ public class ReviewServiceImpl implements ReviewService {
             return item;
         }).collect(Collectors.toList());
 
-        PageInfo<Review> reviewPageInfo = new PageInfo<>(reviews);
+        BeanUtils.copyProperties(reviewPageInfo,pageInfo);
+        pageInfo.setList(reviews);
 
-        log.info("获取评论信息：{}", review);
-        return reviewPageInfo;
+        log.info("获取评论信息：{}", pageInfo);
+        return pageInfo;
+    }
+
+    @Override
+    public List<Review> getListByUser(Long userId) {
+        return reviewMapper.getReviewListByUser(userId);
+    }
+
+    @Override
+    public List<Review> getListByProduct(Long productId) {
+        return reviewMapper.getReviewListByProduct(productId);
     }
 
     @Override

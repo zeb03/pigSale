@@ -6,6 +6,7 @@ import com.ze.pigSale.entity.Orders;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * author: zebii
@@ -16,7 +17,7 @@ public interface OrdersService {
     /**
      * 根据id获取订单
      *
-     * @param orders
+     * @param ordersId
      * @return
      */
     Orders getById(Long ordersId);
@@ -24,9 +25,11 @@ public interface OrdersService {
     /**
      * 管理员获取订单信息
      * 可以模糊查询订单号，按指定时间范围进行修改
-     *
      * @param currentPage
      * @param pageSize
+     * @param ordersId
+     * @param beginTime
+     * @param endTime
      * @return
      */
     PageInfo<OrdersDto> getPageWithDetail(int currentPage, int pageSize, Long ordersId, LocalDateTime beginTime, LocalDateTime endTime);
@@ -40,7 +43,10 @@ public interface OrdersService {
 
     /**
      * 查看用户的所有订单
-     *
+     * @param currentPage
+     * @param pageSize
+     * @param beginTime
+     * @param endTime
      * @return
      */
     PageInfo<OrdersDto> getListByUserId(int currentPage, int pageSize, LocalDateTime beginTime, LocalDateTime endTime);
@@ -75,8 +81,8 @@ public interface OrdersService {
 
     /**
      * 拒接退款
-     *
      * @param orders
+     * @param request
      */
     void disagree(Orders orders, HttpServletRequest request);
 }

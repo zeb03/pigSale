@@ -22,7 +22,7 @@
         district,detail,isDefault
     </sql>
 
-    <select id="getAddressListByUserId" resultType="address">
+    <select id="getAddressListByUserId" resultType="com.ze.pigSale.entity.Address">
         select *
         from address
         where user_id = #{userId}

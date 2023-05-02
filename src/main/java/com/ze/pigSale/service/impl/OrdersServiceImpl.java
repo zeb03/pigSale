@@ -20,8 +20,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -45,7 +43,7 @@ public class OrdersServiceImpl implements OrdersService {
     private CartService cartService;
 
     @Autowired
-    private OrdersDetailService ordersDetailService;
+    private OrderDetailService ordersDetailService;
 
     @Autowired
     private ProductService productService;

@@ -80,4 +80,8 @@
         from orders
         where id = #{id}
     </select>
+
+    <select id="getByNoReview" resultType="com.ze.pigSale.entity.Orders">
+
+    </select>
 </mapper>

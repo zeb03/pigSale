@@ -23,17 +23,17 @@ public interface ReviewMapper {
 
     /**
      * 获取用户评论
-     * @param review
+     * @param userId
      * @return
      */
-    List<Review> getReviewListByUser(Review review);
+    List<Review> getReviewListByUser(@Param("userId") Long userId);
 
     /**
      * 获取商品评论
-     * @param review
+     * @param productId
      * @return
      */
-    List<Review> getReviewListByProduct(Review review);
+    List<Review> getReviewListByProduct(@Param("productId") Long productId);
 
     /**
      * 根据id修改评论

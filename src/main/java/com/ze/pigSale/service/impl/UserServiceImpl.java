@@ -55,7 +55,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void register(User user) {
-        user.setRole(0);
         log.info("注册信息：{}", user);
 
         User userResult = userMapper.getUserByUsernameOrPhone(user);
@@ -64,25 +63,25 @@ public class UserServiceImpl implements UserService {
         }
 
         user.setPassword(DigestUtils.md5DigestAsHex(user.getPassword().getBytes()));
-
         userMapper.insertUser(user);
     }
 
     @Override
-    public PageInfo<User> getUserPage(Integer currentPage, Integer pageSize, Integer role) {
+    public PageInfo<User> getUserPage(Integer currentPage, Integer pageSize, Integer role, String search) {
         //判断权限
-        boolean hasPermission = userPermissionService.hasPermission("view_user");
-        if (!hasPermission) {
-            throw new CustomException(CommonUtil.NOT_PERMISSION);
-        }
+        // TODO:暂时修改
+//        boolean hasPermission = userPermissionService.hasPermission("view_user");
+//        if (!hasPermission) {
+//            throw new CustomException(CommonUtil.NOT_PERMISSION);
+//        }
 
         PageMethod.startPage(currentPage, pageSize);
         //待完善
         List<User> userList = null;
         if (role == 0) {
-            userList = userMapper.getUserByRole();
+            userList = userMapper.getUserByRole(search);
         } else {
-            userList = userMapper.getAdminByRole();
+            userList = userMapper.getAdminByRole(search);
         }
         return new PageInfo<>(userList);
     }
@@ -90,13 +89,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateUser(User user) {
         //判断权限
-        Long userId = BaseContext.getCurrentId();
-        if (!Objects.equals(user.getUserId(), userId)) {
-            boolean hasPermission = userPermissionService.hasPermission("edit_user");
-            if (!hasPermission) {
-                throw new CustomException(CommonUtil.NOT_PERMISSION);
-            }
-        }
+        // TODO
+//        Long userId = BaseContext.getCurrentId();
+//        if (!Objects.equals(user.getUserId(), userId)) {
+//            boolean hasPermission = userPermissionService.hasPermission("edit_user");
+//            if (!hasPermission) {
+//                throw new CustomException(CommonUtil.NOT_PERMISSION);
+//            }
+//        }
 
         if (user.getPassword() == null || "".equals(user.getPassword())) {
             userMapper.updateUser(user);

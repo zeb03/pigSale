@@ -1,33 +1,45 @@
 package com.ze.pigSale.controller;
 
-import com.github.pagehelper.ISelect;
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
+import com.ze.pigSale.entity.Permissions;
 import com.ze.pigSale.entity.User;
+import com.ze.pigSale.entity.UserPermissions;
+import com.ze.pigSale.service.PermissionService;
+import com.ze.pigSale.service.UserPermissionService;
 import com.ze.pigSale.service.UserService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpRequest;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Objects;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * author: zebii
+ * @author: zeb
  * Date: 2023-03-13-16:13
  */
 @Slf4j
 @RestController
 @RequestMapping("/user")
+//@CrossOrigin(origins = "*")
 public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserPermissionService userPermissionService;
+
+    @Autowired
+    private PermissionService permissionService;
 
     /**
      * 用户登录
@@ -76,6 +88,8 @@ public class UserController {
      */
     @PostMapping("/register")
     public Result<String> register(@RequestBody User user) {
+        user.setRole(0);
+        user.setStatus(1);
         userService.register(user);
         return Result.success("添加成功");
     }
@@ -94,6 +108,13 @@ public class UserController {
         return Result.success("退出成功");
     }
 
+    /**
+     * 移除用户
+     *
+     * @param user
+     * @param request
+     * @return
+     */
     @DeleteMapping("/remove")
     public Result<String> remove(@RequestBody User user, HttpServletRequest request) {
         log.info("{}", user);
@@ -102,16 +123,28 @@ public class UserController {
     }
 
     /**
-     * 管理员注册
+     * 添加管理员
      * 待完善，可以给管理员各种权限
+     *
      * @param user
      * @return
      */
     @PostMapping
+    @Transactional()
     public Result<User> addAdmin(@RequestBody User user) {
-        user.setRole(1);
         user.setStatus(1);
+        if (BaseContext.getCurrentId() != 1) {
+            throw new CustomException("此用户无权限");
+        }
         userService.register(user);
+        List<Permissions> permissions = permissionService.getByRoleId(user.getRole());
+        permissions.stream().map(item -> {
+            UserPermissions userPermissions = new UserPermissions();
+            BeanUtils.copyProperties(item, userPermissions);
+            userPermissions.setUserId(user.getUserId());
+            userPermissionService.addPermission(userPermissions);
+            return item;
+        }).collect(Collectors.toList());
         return Result.success(user);
     }
 
@@ -124,8 +157,9 @@ public class UserController {
      * @return
      */
     @GetMapping("/page")
-    public Result<PageInfo<User>> page(Integer currentPage, Integer pageSize, Integer role) {
-        PageInfo<User> userPage = userService.getUserPage(currentPage, pageSize, role);
+    public Result<PageInfo<User>> page(Integer currentPage, Integer pageSize, Integer role, String search) {
+        log.info(search);
+        PageInfo<User> userPage = userService.getUserPage(currentPage, pageSize, role, search);
         return Result.success(userPage);
     }
 
@@ -150,6 +184,7 @@ public class UserController {
      */
     @PutMapping
     public Result<User> editUser(@RequestBody User user) {
+        log.info("修改用户信息: " + user);
         userService.updateUser(user);
         return Result.success(user);
     }

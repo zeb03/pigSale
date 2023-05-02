@@ -1,6 +1,7 @@
 package com.ze.pigSale.entity;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 import lombok.Data;
@@ -16,7 +17,7 @@ public class Review implements Serializable {
 
     private Long productId;
 
-    private Integer rating;
+    private BigDecimal rating;
 
     private String comment;
 

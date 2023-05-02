@@ -76,7 +76,7 @@ public class CartController {
         if (userCart == null) {
             //设置购物车信息
             Product product = productService.getProductById(cart.getProductId());
-            cart.setQuantity(1);
+            cart.setQuantity(cart.getQuantity());
             cart.setImage(product.getImage());
             cart.setAmount(product.getPrice());
             cart.setName(product.getProductName());

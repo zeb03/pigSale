@@ -1,9 +1,12 @@
 package com.ze.pigSale.controller;
 
 
+import cn.hutool.core.io.FileUtil;
 import com.ze.pigSale.common.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,88 +15,86 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.util.UUID;
 
 /**
  * author: zebii
  * Date: 2023-01-30-20:59
+ *
+ * @author ze
  */
+@CrossOrigin
 @RestController
 @RequestMapping("/common")
 @Slf4j
 public class CommonController {
 
+//    @Value("${server.ip}")
+//    private String serverIp;
+//    @Value("${server.port}")
+//    private String serverPort;
+    //写在配置文件
     @Value("${pigSale.path}")
     private String basePath;
 
-
     @PostMapping("/upload")
-    public String upload(MultipartFile file) {
+    public Result<String> upload(@RequestPart("file") MultipartFile file) {
+        log.info("{}", file);
         try {
             if (file.isEmpty()) {
-                return "文件为空";
+                return Result.error("文件为空");
             }
-            //获取文件名
-            String fileName = file.getOriginalFilename();
-            log.info("上传的文件名：" + fileName);
+            //生成文件名 uuid
+            String uuid = UUID.randomUUID().toString();
             //获取文件后缀名
-            assert fileName != null;
-            String suffixName = fileName.substring(fileName.lastIndexOf("."));
-            log.info("文件后缀名：" + suffixName);
+            String suffixName = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+            //获取文件名
+            String fileName = uuid + suffixName;
+            log.info("生成的文件名：" + fileName);
+
             //设置文件存储路径
-            String filePath = basePath;
-            String path = filePath + fileName;
+            String path = basePath + fileName;
+
             File dest = new File(path);
+            log.info("文件路径：" + dest);
             //检测是否存在该目录
-            if (!dest.getParentFile().exists()) {
-                dest.getParentFile().mkdirs();
+            if (!dest.exists()) {
+                dest.mkdirs();
             }
             //写入文件
             file.transferTo(dest);
-            return "上传成功！";
+//            String url = "http://" + serverIp + ":" + serverPort + "/common/views?filename=" + fileName;
+            String url = fileName;
+            return Result.success(url);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return "上传失败";
+        return Result.error("上传失败");
     }
 
     @GetMapping("/download")
-    public Result<String> download(String filename, HttpServletResponse response) {
-        FileInputStream fileInputStream = null;
-        ServletOutputStream outputStream = null;
+    public void download(String filename, HttpServletResponse response) throws IOException {
+        log.info("filename:" + filename);
+        String[] split = filename.split("/");
+        String name = split[split.length - 1];
+
         File file = new File(basePath + filename);
         if (file.exists()) {
-            try {
-                fileInputStream = new FileInputStream(basePath + filename);
-                outputStream = response.getOutputStream();
+            log.info("下载图片文件名：" + basePath + filename);
+            ServletOutputStream outputStream = response.getOutputStream();
 
-                response.setContentType("application/force-download");// 设置强制下载不打开
-                response.addHeader("Content-Disposition", "attachment;fileName=" + filename);// 设置文件名
-                int len = 0;
-                byte[] bytes = new byte[1024];
-                while ((len = fileInputStream.read(bytes)) != -1) {
-                    outputStream.write(bytes, 0, len);
-                    outputStream.flush();
-                }
-                return Result.success("图片下载成功");
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    if (fileInputStream != null) {
-                        fileInputStream.close();
-                    }
-                    if (outputStream != null) {
-                        outputStream.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            //设置输出流格式
+            response.addHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(name, "UTF-8"));
 
-            }
-
+            //任意类型的二进制流数据
+            response.setContentType("application/octet-stream");
+            //读取文件字节流
+            outputStream.write(FileUtil.readBytes(file));
+            outputStream.flush();
+            outputStream.close();
         }
-
-        return Result.error("图片下载失败");
     }
-
 }

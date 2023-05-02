@@ -33,8 +33,12 @@ public interface UserService {
 
     /**
      * 分页查询所有用户
+     * @param currentPage
+     * @param pageSize
+     * @param role
+     * @return
      */
-    PageInfo<User> getUserPage(Integer currentPage, Integer pageSize, Integer role);
+    PageInfo<User> getUserPage(Integer currentPage, Integer pageSize, Integer role,String search);
 
     /**
      * 修改用户

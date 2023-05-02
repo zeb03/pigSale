@@ -1,8 +1,6 @@
 package com.ze.pigSale.service;
 
-import com.ze.pigSale.dto.ProductDto;
 import com.ze.pigSale.entity.Product;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 

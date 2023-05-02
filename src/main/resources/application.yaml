@@ -10,6 +10,7 @@ spring:
     password: abc123
 
 server:
+  ip: localhost
   port: 8080
 
 #指定Mybatis的Mapper文件
@@ -20,4 +21,8 @@ mybatis:
     map-underscore-to-camel-case: true
 
 pigSale:
-  path: D\temp\
+  path: D:\temp\
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.ze.pigSale.entity
+  type-enums-package: com.ze.pigSale.enums

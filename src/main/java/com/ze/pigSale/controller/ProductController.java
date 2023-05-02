@@ -1,23 +1,26 @@
 package com.ze.pigSale.controller;
 
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
-import com.ze.pigSale.dto.ProductDto;
+import com.ze.pigSale.entity.Review;
+import com.ze.pigSale.service.ReviewService;
+import com.ze.pigSale.vo.ProductVo;
 import com.ze.pigSale.entity.Category;
 import com.ze.pigSale.entity.Product;
-import com.ze.pigSale.entity.User;
 import com.ze.pigSale.service.CategoryService;
 import com.ze.pigSale.service.ProductService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,33 +31,35 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController()
 @RequestMapping("/product")
+@AllArgsConstructor
 public class ProductController {
 
-    @Autowired
     private ProductService productService;
-    @Autowired
+
     private CategoryService categoryService;
+
+    private ReviewService reviewService;
 
 
     @GetMapping
-    public Result<ProductDto> getOne(ProductDto productDto) {
-        log.info("ProductDto：{}", productDto);
+    public Result<ProductVo> getOne(ProductVo productVo) {
+        log.info("ProductVo：{}", productVo);
         //获取产品
-        Product product = productService.getProductById(productDto.getProductId());
+        Product product = productService.getProductById(productVo.getProductId());
         //获取种类
-        Category category = categoryService.getCategoryById(productDto.getCategoryId());
+        Category category = categoryService.getCategoryById(productVo.getCategoryId());
         if (category != null) {
-            productDto.setCategoryName(category.getCategoryName());
+            productVo.setCategoryName(category.getCategoryName());
         }
         if (product != null) {
-            BeanUtils.copyProperties(product, productDto);
+            BeanUtils.copyProperties(product, productVo);
         }
-        log.info("ProductDto：{}", productDto);
-        return Result.success(productDto);
+        log.info("ProductVo：{}", productVo);
+        return Result.success(productVo);
     }
 
     @GetMapping("/{productId}")
-    public Result<ProductDto> detail(@PathVariable("productId") Long productId){
+    public Result<ProductVo> detail(@PathVariable("productId") Long productId) {
         //获取商品
         Product product = productService.getProductById(productId);
 
@@ -63,15 +68,26 @@ public class ProductController {
         }
 
         //创建dto并复制属性
-        ProductDto productDto = new ProductDto();
-        BeanUtils.copyProperties(product,productDto);
+        ProductVo productVo = new ProductVo();
+        BeanUtils.copyProperties(product, productVo);
 
         //根据类别id获取名称并赋值
-        Category category = categoryService.getCategoryById(productDto.getCategoryId());
+        Category category = categoryService.getCategoryById(productVo.getCategoryId());
         if (category != null) {
-            productDto.setCategoryName(category.getCategoryName());
+            productVo.setCategoryName(category.getCategoryName());
         }
-        return Result.success(productDto);
+
+        //获取商品评分
+        List<Review> reviews = reviewService.getListByProduct(productId);
+        BigDecimal total = new BigDecimal(0);
+        for (Review review : reviews) {
+            total = total.add(review.getRating());
+        }
+        double totalRating = total.doubleValue();
+        double rating = totalRating / reviews.size();
+        String format = new DecimalFormat("#.0").format(rating);
+        productVo.setRating(Double.parseDouble(format));
+        return Result.success(productVo);
     }
 
     /**
@@ -84,33 +100,33 @@ public class ProductController {
      * @return
      */
     @GetMapping("/page")
-    public Result<PageInfo<ProductDto>> page(Integer currentPage, Integer pageSize, String keyword, Long categoryId) {
+    public Result<PageInfo<ProductVo>> page(Integer currentPage, Integer pageSize, String keyword, Long categoryId) {
         PageMethod.startPage(currentPage, pageSize);
         List<Product> productList = productService.getProductList(keyword, categoryId);
 
         PageInfo<Product> sourcePageInfo = new PageInfo<>(productList);
-        PageInfo<ProductDto> targetPageInfo = new PageInfo<>();
+        PageInfo<ProductVo> targetPageInfo = new PageInfo<>();
 
         BeanUtils.copyProperties(sourcePageInfo, targetPageInfo);
 
-        List<ProductDto> productDtoList = productList.stream().map((item -> {
+        List<ProductVo> productVoList = productList.stream().map((item -> {
             //创建dto
-            ProductDto productDto = new ProductDto();
-            BeanUtils.copyProperties(item, productDto);
+            ProductVo productVo = new ProductVo();
+            BeanUtils.copyProperties(item, productVo);
 
             //获取种类名
-            Long id = productDto.getCategoryId();
+            Long id = productVo.getCategoryId();
             Category category = categoryService.getCategoryById(id);
 
             if (category != null) {
                 String name = category.getCategoryName();
-                productDto.setCategoryName(name);
+                productVo.setCategoryName(name);
             }
 
-            return productDto;
+            return productVo;
         })).collect(Collectors.toList());
 
-        targetPageInfo.setList(productDtoList);
+        targetPageInfo.setList(productVoList);
         return Result.success(targetPageInfo);
     }
 
@@ -144,6 +160,7 @@ public class ProductController {
 
     /**
      * 移除商品
+     *
      * @param productId
      * @return
      */

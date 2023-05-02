@@ -24,7 +24,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import java.util.List;
 
 /**
- * author: zebii
+ * @author: zebii
  * Date: 2023-01-28-20:35
  */
 @EnableSwagger2
@@ -39,22 +39,37 @@ public class MyWebConfig implements WebMvcConfigurer {
         registry.addInterceptor(loginInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns(
+                        "/user/**",
+                        "/role/**",
+                        "/user/page",
+                        "/permissions/**",
+                        "/product/**",
+                        "/review/list/**",
+                        "/review/page",
+                        "/review/remove/**",
+                        "/review/publish",
+                        "/order/detail/review/**",
+
+                        "/img/**",
                         "/user/login",
-                        "/page/**",
                         "/user/register",
-                        "/index.html#/login",
-                        "/index.html",
+                        "/user/index.html",
+                        "/user/js/**",
+                        "/user/css/**",
+                        "/user/images/**",
+                        "/user/img/**",
+                        "/user/favicon.ico",
+                        "/user/fonts/**",
+                        "/admin/index.html",
+                        "/admin/favicon.ico",
+                        "/admin/js/**",
+                        "/admin/css/**",
                         "/error",
                         "/templates/**",
                         "/category/list",
                         "/product/page",
                         "/common/**",
-                        "/js/**",
-                        "/css/**",
-                        "/img/**",
-                        "/fonts/**",
-                        "/favicon.ico",
-                        "/user/sendMsg",
+                        "/images/**",
                         "/doc.html",
                         "/webjars/**",
                         "/swagger-resources",

@@ -1,6 +1,7 @@
 package com.ze.pigSale.common;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,7 +12,7 @@ import java.io.FileNotFoundException;
 import java.sql.SQLIntegrityConstraintViolationException;
 
 /**
- * author: zebii
+ * @author: zebii
  * Date: 2023-01-29-16:10
  */
 @ControllerAdvice(annotations = {RestController.class, Controller.class})
@@ -25,7 +26,7 @@ public class GlobalExceptionHandler {
             String[] split = ex.getMessage().split(" ");
             String msg = split[2] + "已经存在";
             return Result.error(msg);
-        }else if (ex.getMessage().contains("cannot be null")){
+        } else if (ex.getMessage().contains("cannot be null")) {
             String[] split = ex.getMessage().split(" ");
             String msg = split[1] + "为空";
             return Result.error(msg);
@@ -33,13 +34,18 @@ public class GlobalExceptionHandler {
         return Result.error("未知错误");
     }
 
+    @ExceptionHandler(org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException.class)
+    public Result<String> fileSizeLimitExceededException() {
+        return Result.error("文件超过限制大小");
+    }
+
     @ExceptionHandler(FileNotFoundException.class)
-    public Result<String> fileNotFoundException(){
+    public Result<String> fileNotFoundException() {
         return Result.error("找不到指定文件");
     }
 
     @ExceptionHandler(CustomException.class)
-    public Result<String> CustomException(CustomException customException){
+    public Result<String> customException(CustomException customException) {
         return Result.error(customException.getMessage());
     }
 }

@@ -6,8 +6,8 @@ import com.ze.pigSale.entity.Review;
 import java.util.List;
 
 /**
- * author: zebii
  * Date: 2023-04-08-14:03
+ * @author ze
  */
 public interface ReviewService {
 
@@ -18,11 +18,28 @@ public interface ReviewService {
     void addReview(Review review);
 
     /**
-     * 获取产品评论或用户评论
+     * 获取产品评论或用户评论的分页信息
+     * @param currentPage
+     * @param pageSize
      * @param review
+     * @param queryWay
      * @return
      */
-    PageInfo<Review> getReviewList(Integer currentPage, Integer pageSize, Review review,Integer queryWay);
+    PageInfo<Review> getReviewPage(Integer currentPage, Integer pageSize, Review review,Integer queryWay);
+
+    /**
+     * 通过用户id获取评论列表
+     * @param userId
+     * @return
+     */
+    List<Review> getListByUser(Long userId);
+
+    /**
+     * 通过商品id获取评论列表
+     * @param productId
+     * @return
+     */
+    List<Review> getListByProduct(Long productId);
 
     /**
      * 修改评论

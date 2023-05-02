@@ -4,6 +4,7 @@ import com.ze.pigSale.common.Result;
 import com.ze.pigSale.entity.Permissions;
 import com.ze.pigSale.entity.User;
 import com.ze.pigSale.entity.UserPermissions;
+import com.ze.pigSale.service.PermissionService;
 import com.ze.pigSale.service.UserPermissionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * author: zebii
  * Date: 2023-04-09-17:10
+ *
+ * @author ze
  */
 @RestController
 @Slf4j
@@ -23,11 +25,13 @@ import java.util.List;
 public class PermissionsController {
 
     @Autowired
-    private UserPermissionService userPermissionService;
+    private PermissionService permissionService;
 
-    @GetMapping
-    public Result<List<UserPermissions>> list() {
-        List<UserPermissions> permissions = userPermissionService.getByUserId();
-        return Result.success(permissions);
+    @GetMapping("/list")
+    public Result<List<Permissions>> list() {
+        List<Permissions> list = permissionService.getList();
+        log.info("所有权限:" + list);
+        return Result.success(list);
     }
+
 }

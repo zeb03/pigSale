@@ -29,6 +29,13 @@ public class Result<T> {
         return r;
     }
 
+    public static <T> Result<T> error(Integer code, String msg) {
+        Result r = new Result();
+        r.msg = msg;
+        r.code = code;
+        return r;
+    }
+
     public Result<T> add(String key, Object value) {
         this.map.put(key, value);
         return this;

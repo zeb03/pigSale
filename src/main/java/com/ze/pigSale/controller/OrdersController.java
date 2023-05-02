@@ -6,6 +6,7 @@ import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
 import com.ze.pigSale.dto.OrdersDto;
+import com.ze.pigSale.dto.TimeDto;
 import com.ze.pigSale.entity.Orders;
 import com.ze.pigSale.service.OrdersService;
 import com.ze.pigSale.service.impl.OrdersServiceImpl;
@@ -66,18 +67,19 @@ public class OrdersController {
      *
      * @param currentPage
      * @param pageSize
-     * @param beginTime
-     * @param endTime
      * @return
      */
-    @GetMapping("user/page")
-    public Result<PageInfo<OrdersDto>> list(int currentPage, int pageSize, LocalDateTime beginTime, LocalDateTime endTime) {
-        PageInfo<OrdersDto> ordersDtoPageInfo = ordersService.getListByUserId(currentPage, pageSize, beginTime, endTime);
+    @GetMapping("/user/page")
+    public Result<PageInfo<OrdersDto>> page(int currentPage, int pageSize, TimeDto timeDto) {
+        log.info("{}", timeDto);
+        PageInfo<OrdersDto> ordersDtoPageInfo = ordersService.getListByUserId(currentPage, pageSize, timeDto.getBeginTime(), timeDto.getEndTime());
         return Result.success(ordersDtoPageInfo);
     }
 
+
     /**
      * 修改订单状态
+     *
      * @param orders
      * @return
      */
@@ -90,6 +92,7 @@ public class OrdersController {
 
     /**
      * 再来一单
+     *
      * @param orders
      * @return
      */
@@ -101,11 +104,12 @@ public class OrdersController {
 
     /**
      * 取消订单或退款
+     *
      * @param ordersId
      * @param request
      * @return
      */
-    @PutMapping("/cancel/{ordersId}")
+    @DeleteMapping("/cancel/{ordersId}")
     public Result<String> cancel(@PathVariable("ordersId") Long ordersId, HttpServletRequest request) {
 
         //获取此订单
@@ -140,6 +144,7 @@ public class OrdersController {
 
     /**
      * 同意退款
+     *
      * @param orders
      * @return
      */
@@ -151,6 +156,7 @@ public class OrdersController {
 
     /**
      * 拒绝退款
+     *
      * @param orders
      * @param request
      * @return
