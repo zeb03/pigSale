@@ -9,7 +9,7 @@ import lombok.Data;
  */
 @Data
 public class OrderDetail implements Serializable {
-    private Long id;
+    private Long orderDetailId;
 
     private Long orderId;
 

@@ -2,8 +2,10 @@ package com.ze.pigSale.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.ze.pigSale.common.Result;
+import com.ze.pigSale.entity.Orders;
 import com.ze.pigSale.entity.Product;
 import com.ze.pigSale.entity.Review;
+import com.ze.pigSale.service.OrdersService;
 import com.ze.pigSale.service.ProductService;
 import com.ze.pigSale.service.ReviewService;
 import com.ze.pigSale.vo.ReviewVo;
@@ -30,8 +32,12 @@ public class ReviewController {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private OrdersService ordersService;
+
     @PostMapping("/publish")
     public Result<String> publish(@RequestBody Review review) {
+        log.info("review:" + review);
         if ("".equals(review.getImage())) {
             review.setImage(null);
         }
@@ -40,9 +46,8 @@ public class ReviewController {
     }
 
     @GetMapping("/page")
-    public Result<PageInfo<Review>> page(Integer currentPage, Integer pageSize, Review review, Integer queryWay) {
-        log.info("商品评论：{}", currentPage);
-        PageInfo<Review> reviewPageInfo = reviewService.getReviewPage(currentPage, pageSize, review, queryWay);
+    public Result<PageInfo<ReviewVo>> page(Integer currentPage, Integer pageSize, Review review, Integer queryWay) {
+        PageInfo<ReviewVo> reviewPageInfo = reviewService.getReviewPage(currentPage, pageSize, review, queryWay);
         return Result.success(reviewPageInfo);
     }
 
@@ -55,8 +60,6 @@ public class ReviewController {
     @GetMapping("/list/{userId}")
     public Result<List<ReviewVo>> list(@PathVariable("userId") Long userId) {
         //获取用户评论
-        // TODO:
-        userId = 10L;
         List<Review> reviews = reviewService.getListByUser(userId);
 
         //根据productId获取商品信息

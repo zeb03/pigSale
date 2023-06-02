@@ -3,11 +3,9 @@ package com.ze.pigSale.service.impl;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.controller.CommonController;
-import com.ze.pigSale.entity.Cart;
-import com.ze.pigSale.entity.Product;
-import com.ze.pigSale.entity.User;
-import com.ze.pigSale.entity.UserPermissions;
+import com.ze.pigSale.entity.*;
 import com.ze.pigSale.enums.PermissionEnum;
+import com.ze.pigSale.mapper.OrderDetailMapper;
 import com.ze.pigSale.mapper.ProductMapper;
 import com.ze.pigSale.service.CartService;
 import com.ze.pigSale.service.ProductService;
@@ -20,7 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * author: zebii
@@ -40,6 +42,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private UserPermissionService userPermissionService;
+
+    @Autowired
+    private OrderDetailMapper orderDetailMapper;
 
 
     @Override
@@ -61,7 +66,7 @@ public class ProductServiceImpl implements ProductService {
     public void insertProduct(Product product) {
         //判断权限
         boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.ADD_PRODUCT);
-        if (!hasPermission){
+        if (!hasPermission) {
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }
 
@@ -75,7 +80,7 @@ public class ProductServiceImpl implements ProductService {
     public void updateProduct(Product product) {
         //判断权限
         boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.EDIT_PRODUCT);
-        if (!hasPermission){
+        if (!hasPermission) {
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }
 
@@ -99,9 +104,26 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(Long productId) {
         //判断权限
         boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.DELETE_PRODUCT);
-        if (!hasPermission){
+        if (!hasPermission) {
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }
         productMapper.deleteProduct(productId);
+    }
+
+    @Override
+    public Map<String, Integer> getSalesRank() {
+        List<OrderDetail> list = orderDetailMapper.getList();
+        HashMap<String, Integer> rankMap = new LinkedHashMap<>();
+
+        list.stream().map(item -> {
+            Long productId = item.getProductId();
+            Integer quantity = item.getQuantity();
+            Product product = productMapper.getProductById(productId);
+            String productName = product.getProductName();
+            rankMap.put(productName, rankMap.getOrDefault(productName, 0) + quantity);
+            return null;
+        }).collect(Collectors.toList());
+
+        return rankMap;
     }
 }

@@ -21,7 +21,10 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -79,14 +82,19 @@ public class ProductController {
 
         //获取商品评分
         List<Review> reviews = reviewService.getListByProduct(productId);
-        BigDecimal total = new BigDecimal(0);
-        for (Review review : reviews) {
-            total = total.add(review.getRating());
+        if (reviews == null || reviews.isEmpty()) {
+            productVo.setRating(0.0);
+        } else {
+            BigDecimal total = new BigDecimal(0);
+            for (Review review : reviews) {
+                total = total.add(review.getRating());
+            }
+            double totalRating = total.doubleValue();
+            double rating = totalRating / reviews.size();
+            String format = new DecimalFormat("#.0").format(rating);
+            productVo.setRating(Double.parseDouble(format));
         }
-        double totalRating = total.doubleValue();
-        double rating = totalRating / reviews.size();
-        String format = new DecimalFormat("#.0").format(rating);
-        productVo.setRating(Double.parseDouble(format));
+        log.info("rating: " + productVo.getRating());
         return Result.success(productVo);
     }
 
@@ -169,4 +177,18 @@ public class ProductController {
         productService.deleteProduct(productId);
         return Result.success("删除成功");
     }
+
+    /**
+     * 获取总销量
+     * @return
+     */
+    @GetMapping("/salesRank")
+    public Result<Map<String, Integer>> getSalesRank() {
+        log.info("getSalesRank");
+        Map<String, Integer> salesRank = productService.getSalesRank();
+        return Result.success(salesRank);
+    }
+
+
+
 }

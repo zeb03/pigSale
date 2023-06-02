@@ -15,6 +15,8 @@ import java.util.List;
 @ToString
 public class ProductVo extends Product {
 
+    Integer sales;
+
     private String categoryName;
 
     private Double rating;

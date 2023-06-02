@@ -235,10 +235,10 @@ public class OrdersServiceImpl implements OrdersService {
         SnowFlake idWorker = new SnowFlake(0, 0);
         oneOrders.setId(idWorker.nextId());
         //设置下单时间
-        orders.setCreateTime(LocalDateTime.now());
-        orders.setCheckoutTime(LocalDateTime.now());
+        oneOrders.setCreateTime(LocalDateTime.now());
+        oneOrders.setCheckoutTime(LocalDateTime.now());
         //设置订单状态
-        orders.setStatus(2);
+        oneOrders.setStatus(2);
 
         //保存此订单
         ordersMapper.save(oneOrders);

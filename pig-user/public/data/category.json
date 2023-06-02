@@ -1,0 +1,21 @@
+{
+    "code": 200,
+    "msg": null,
+    "data": [
+        {
+            "categoryId": 1,
+            "categoryName": "猪肉",
+            "parentId": null
+        },
+        {
+            "categoryId": 2,
+            "categoryName": "肉猪",
+            "parentId": 1
+        },
+        {
+            "categoryId": 3,
+            "categoryName": "猪脚",
+            "parentId": 2
+        }
+    ]
+}

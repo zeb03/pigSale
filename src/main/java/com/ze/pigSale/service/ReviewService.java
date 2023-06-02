@@ -2,6 +2,7 @@ package com.ze.pigSale.service;
 
 import com.github.pagehelper.PageInfo;
 import com.ze.pigSale.entity.Review;
+import com.ze.pigSale.vo.ReviewVo;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ public interface ReviewService {
      * @param queryWay
      * @return
      */
-    PageInfo<Review> getReviewPage(Integer currentPage, Integer pageSize, Review review,Integer queryWay);
+    PageInfo<ReviewVo> getReviewPage(Integer currentPage, Integer pageSize, Review review, Integer queryWay);
 
     /**
      * 通过用户id获取评论列表

@@ -5,18 +5,13 @@ import cn.hutool.core.io.FileUtil;
 import com.ze.pigSale.common.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.UUID;
 
@@ -77,13 +72,12 @@ public class CommonController {
 
     @GetMapping("/download")
     public void download(String filename, HttpServletResponse response) throws IOException {
-        log.info("filename:" + filename);
         String[] split = filename.split("/");
         String name = split[split.length - 1];
 
         File file = new File(basePath + filename);
         if (file.exists()) {
-            log.info("下载图片文件名：" + basePath + filename);
+//            log.info("下载图片文件名：" + basePath + filename);
             ServletOutputStream outputStream = response.getOutputStream();
 
             //设置输出流格式

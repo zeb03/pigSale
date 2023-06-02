@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * author: zebii
+ * @author: ze
  * Date: 2023-04-09-16:10
  */
 @Service
@@ -82,10 +82,10 @@ public class UserPermissionServiceImpl implements UserPermissionService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void updatePermission(List<UserPermissions> userPermissions) {
         //先删除该用户所有的权限
-        Long userId = BaseContext.getCurrentId();
+        Long userId = userPermissions.get(0).getUserId();
         userPermissionsMapper.deleteByUser(userId);
         //再添加所选权限
         this.addBatchPermission(userPermissions);

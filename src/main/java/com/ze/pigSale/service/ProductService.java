@@ -2,7 +2,9 @@ package com.ze.pigSale.service;
 
 import com.ze.pigSale.entity.Product;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * author: zebii
@@ -49,4 +51,9 @@ public interface ProductService {
      * @param productId
      */
     void deleteProduct(Long productId);
+
+    /**
+     * 获取销量排行
+     */
+    Map<String, Integer> getSalesRank();
 }

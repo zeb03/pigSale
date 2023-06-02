@@ -1,10 +1,12 @@
 package com.ze.pigSale.mapper;
 
 import com.ze.pigSale.entity.OrderDetail;
+import com.ze.pigSale.entity.Product;
 import com.ze.pigSale.vo.OrderDetailVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -34,6 +36,13 @@ public interface OrderDetailMapper {
      * @return
      */
     List<OrderDetailVo> getByNoReview(@Param("userId") Long userId);
+
+    /**
+     * 获取指定时间的销量排行
+     */
+    List<OrderDetail> getList();
+
+
 }
 
 

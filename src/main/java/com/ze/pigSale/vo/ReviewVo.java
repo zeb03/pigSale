@@ -9,6 +9,7 @@ import lombok.Data;
  */
 @Data
 public class ReviewVo extends Review {
+    private String avatar;
     private String productName;
     private String productImage;
     private String description;

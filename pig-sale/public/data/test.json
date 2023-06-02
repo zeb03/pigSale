@@ -1,0 +1,119 @@
+{
+    "code": 200,
+    "msg": "success",
+    "data": {
+        "total": 8,
+        "pageNum": 1,
+        "pageSize": 10,
+        "size": 2,
+        "startRow": 1,
+        "endRow": 2,
+        "pages": 3,
+        "prePage": 0,
+        "nextPage": 2,
+        "isFirstPage": true,
+        "isLastPage": false,
+        "hasPreviousPage": false,
+        "hasNextPage": true,
+        "navigatePages": 8,
+        "navigatepageNums": [
+            1,
+            2,
+            3
+        ],
+        "navigateFirstPage": 1,
+        "navigateLastPage": 3,
+        "list": [
+            {
+                "productId": 1,
+                "productName": "商品1",
+                "price": 100.0,
+                "stock": 10,
+                "categoryName": "分类1",
+                "createTime": "2022-01-01 12:00:00",
+                "updateTime": "2022-01-01 12:00:00",
+                "description": "这是商品1的详细描述",
+                "origin": "商品产地",
+                "image": [
+                    "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg",
+                    "https://example.com/image2.jpg"
+                ]
+            },
+            {
+                "productId": 2,
+                "productName": "商品1",
+                "price": 100.0,
+                "stock": 10,
+                "categoryName": "分类1",
+                "createTime": "2022-01-01 12:00:00",
+                "updateTime": "2022-01-01 12:00:00",
+                "description": "这是商品1的详细描述",
+                "origin": "商品产地",
+                "image": [
+                    "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg",
+                    "https://example.com/image2.jpg"
+                ]
+            },
+            {
+                "productId": 3,
+                "productName": "商品1",
+                "price": 100.0,
+                "stock": 10,
+                "categoryName": "分类1",
+                "createTime": "2022-01-01 12:00:00",
+                "updateTime": "2022-01-01 12:00:00",
+                "description": "这是商品1的详细描述",
+                "origin": "商品产地",
+                "image": [
+                    "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg",
+                    "https://example.com/image2.jpg"
+                ]
+            },
+            {
+                "productId": 4,
+                "productName": "商品1",
+                "price": 100.0,
+                "stock": 10,
+                "categoryName": "分类1",
+                "createTime": "2022-01-01 12:00:00",
+                "updateTime": "2022-01-01 12:00:00",
+                "description": "这是商品1的详细描述",
+                "origin": "商品产地",
+                "image": [
+                    "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg",
+                    "https://example.com/image2.jpg"
+                ]
+            },
+            {
+                "productId": 5,
+                "productName": "商品1",
+                "price": 100.0,
+                "stock": 10,
+                "categoryName": "分类1",
+                "createTime": "2022-01-01 12:00:00",
+                "updateTime": "2022-01-01 12:00:00",
+                "description": "这是商品1的详细描述",
+                "origin": "商品产地",
+                "image": [
+                    "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg",
+                    "https://example.com/image2.jpg"
+                ]
+            },
+            {
+                "productId": 1,
+                "productName": "商品1",
+                "price": 100.0,
+                "stock": 10,
+                "categoryName": "分类1",
+                "createTime": "2022-01-01 12:00:00",
+                "updateTime": "2022-01-01 12:00:00",
+                "description": "这是商品1的详细描述",
+                "origin": "商品产地",
+                "image": [
+                    "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg",
+                    "https://example.com/image2.jpg"
+                ]
+            }
+        ]
+    }
+}

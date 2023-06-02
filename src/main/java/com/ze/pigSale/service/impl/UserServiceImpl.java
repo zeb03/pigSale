@@ -70,11 +70,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public PageInfo<User> getUserPage(Integer currentPage, Integer pageSize, Integer role, String search) {
         //判断权限
-        // TODO:暂时修改
-//        boolean hasPermission = userPermissionService.hasPermission("view_user");
-//        if (!hasPermission) {
-//            throw new CustomException(CommonUtil.NOT_PERMISSION);
-//        }
+        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.VIEW_USER);
+        if (!hasPermission) {
+            throw new CustomException(CommonUtil.NOT_PERMISSION);
+        }
 
         PageMethod.startPage(currentPage, pageSize);
         //待完善
@@ -107,7 +106,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(HttpServletRequest request, User user) {
+    public void removeUser(HttpServletRequest request, User user) {
         User oneUser = userService.getUserById(user.getUserId());
         if (oneUser == null) {
             throw new CustomException("用户id错误");
@@ -120,6 +119,11 @@ public class UserServiceImpl implements UserService {
         //清除数据
         request.getSession().removeAttribute("user");
         BaseContext.removeThreadLocal();
+    }
+
+    @Override
+    public void deleteUser(Long id) {
+        userMapper.deleteUser(id);
     }
 
 }

@@ -76,7 +76,8 @@ public class UserController {
         }
 
 //      登录成功，将员工id存入Session并返回登录成功结果
-        request.getSession().setAttribute("user", userResult.getUserId());
+        request.getSession().getServletContext().setAttribute("user", userResult.getUserId());
+        log.info("登录成功:" + userResult.getUserId());
         return Result.success(userResult);
     }
 
@@ -90,6 +91,7 @@ public class UserController {
     public Result<String> register(@RequestBody User user) {
         user.setRole(0);
         user.setStatus(1);
+        user.setImage("avatar.webp");
         userService.register(user);
         return Result.success("添加成功");
     }
@@ -103,7 +105,7 @@ public class UserController {
     @GetMapping("/logout")
     public Result<String> loginOut(HttpServletRequest request) {
         //清理Session中保存的当前用户登录的id
-        request.getSession().removeAttribute("user");
+        request.getSession().getServletContext().removeAttribute("user");
         BaseContext.removeThreadLocal();
         return Result.success("退出成功");
     }
@@ -118,7 +120,7 @@ public class UserController {
     @DeleteMapping("/remove")
     public Result<String> remove(@RequestBody User user, HttpServletRequest request) {
         log.info("{}", user);
-        userService.deleteUser(request, user);
+        userService.removeUser(request, user);
         return Result.success("成功注销");
     }
 
@@ -134,10 +136,9 @@ public class UserController {
     public Result<User> addAdmin(@RequestBody User user) {
         log.info("user:" + user);
         user.setStatus(1);
-        //TODO: 判断权限
-//        if (BaseContext.getCurrentId() != 1) {
-//            throw new CustomException("此用户无权限");
-//        }
+        if (BaseContext.getCurrentId() != 1) {
+            throw new CustomException("此用户无权限");
+        }
         userService.register(user);
         List<Permissions> permissions = permissionService.getByRoleId(user.getRole());
         permissions.stream().map(item -> {
@@ -189,6 +190,13 @@ public class UserController {
         log.info("修改用户信息: " + user);
         userService.updateUser(user);
         return Result.success(user);
+    }
+
+    // TODO:删除后把相关信息也删除
+    @DeleteMapping("/{id}")
+    public Result<String> deleteUser(@PathVariable("id") Long id) {
+        userService.deleteUser(id);
+        return Result.success("删除成功");
     }
 
 }

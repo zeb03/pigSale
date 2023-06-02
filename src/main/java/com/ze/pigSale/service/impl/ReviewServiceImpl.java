@@ -7,8 +7,10 @@ import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.entity.Review;
 import com.ze.pigSale.entity.User;
 import com.ze.pigSale.mapper.ReviewMapper;
+import com.ze.pigSale.service.OrdersService;
 import com.ze.pigSale.service.ReviewService;
 import com.ze.pigSale.service.UserService;
+import com.ze.pigSale.vo.ReviewVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,9 @@ public class ReviewServiceImpl implements ReviewService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private OrdersService ordersService;
+
     @Override
     public void addReview(Review review) {
 
@@ -43,7 +48,8 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public PageInfo<Review> getReviewPage(Integer currentPage, Integer pageSize, Review review, Integer queryWay) {
+    public PageInfo<ReviewVo> getReviewPage(Integer currentPage, Integer pageSize, Review review, Integer queryWay) {
+
         PageMethod.startPage(currentPage, pageSize);
         List<Review> reviews = null;
         if (queryWay == 1) {
@@ -53,23 +59,26 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         PageInfo<Review> reviewPageInfo = new PageInfo<>(reviews);
-        PageInfo<Review> pageInfo = new PageInfo<>();
+        PageInfo<ReviewVo> pageInfo = new PageInfo<>();
 
-        reviews = reviews.stream().map(item ->{
+        List<ReviewVo> reviewVos = reviews.stream().map(item -> {
+            ReviewVo reviewVo = new ReviewVo();
             Long userId = item.getUserId();
             User user = userService.getUserById(userId);
-            if (item.getAnonymous() == 1){
+            if (item.getAnonymous() == 1) {
                 item.setUsername("匿名用户");
-            }else {
+            } else {
                 item.setUsername(user.getUsername());
             }
-            return item;
+            BeanUtils.copyProperties(item, reviewVo);
+            reviewVo.setAvatar(user.getImage());
+            return reviewVo;
         }).collect(Collectors.toList());
 
-        BeanUtils.copyProperties(reviewPageInfo,pageInfo);
-        pageInfo.setList(reviews);
+        BeanUtils.copyProperties(reviewPageInfo, pageInfo);
+        pageInfo.setList(reviewVos);
 
-        log.info("获取评论信息：{}", pageInfo);
+        log.info("返回评论信息：{}", pageInfo);
         return pageInfo;
     }
 

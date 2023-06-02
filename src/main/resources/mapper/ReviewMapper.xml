@@ -25,7 +25,8 @@
 
     <insert id="add">
         insert into review
-        values (null, #{userId}, #{productId}, #{rating}, #{comment}, #{image}, #{anonymous}, #{publishTime},
+        values (null, #{userId}, #{productId}, #{orderDetailId}, #{rating}, #{comment}, #{image}, #{anonymous},
+                #{publishTime},
                 #{username})
     </insert>
 

@@ -21,7 +21,7 @@ public interface UserPermissionService {
     /**
      * 判断用户是否具有权限
      *
-     * @param operation
+     * @param permissionEnum
      * @return
      */
     boolean hasPermission(PermissionEnum permissionEnum);

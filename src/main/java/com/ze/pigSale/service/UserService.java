@@ -49,9 +49,15 @@ public interface UserService {
 
 
     /**
-     * 删除用户
+     * 注销用户
      * @param user
      */
-    void deleteUser(HttpServletRequest request, User user);
+    void removeUser(HttpServletRequest request, User user);
 
+
+    /**
+     * 删除用户
+     * @param id
+     */
+    void deleteUser(Long id);
 }

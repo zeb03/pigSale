@@ -7,6 +7,7 @@ import java.util.Date;
 import lombok.Data;
 
 /**
+ * @author zeb
  * @TableName review
  */
 @Data
@@ -16,6 +17,8 @@ public class Review implements Serializable {
     private Long userId;
 
     private Long productId;
+
+    private Long orderDetailId;
 
     private BigDecimal rating;
 

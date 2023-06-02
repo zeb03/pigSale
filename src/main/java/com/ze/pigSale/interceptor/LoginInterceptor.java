@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Date: 2023-01-28-20:35
+ *
  * @author ze
  */
 @Slf4j
@@ -37,8 +38,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         String path = request.getRequestURL().toString();
         log.info("接口登录拦截：，path：{}", path);
 
-
-        Long user = (Long) request.getSession().getAttribute("user");
+        Long user = (Long) request.getSession().getServletContext().getAttribute("user");
         if (user != null) {
             log.info("用户线程id: {}", Thread.currentThread().getId());
             BaseContext.setCurrentId(user);
@@ -46,7 +46,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         }
         log.info("用户未登录");
 //        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.getWriter().write(JSON.toJSONString(Result.error("not login")));
+        response.getWriter().write(JSON.toJSONString(Result.error(401,"not login")));
         return false;
     }
 

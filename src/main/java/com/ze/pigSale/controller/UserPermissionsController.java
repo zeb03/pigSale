@@ -52,7 +52,7 @@ public class UserPermissionsController {
      * @param userPermissions
      * @return
      */
-    @PutMapping("/add/batch")
+    @PostMapping("/add/batch")
     public Result<String> addBatch(@RequestBody List<UserPermissions> userPermissions) {
         userPermissionService.updatePermission(userPermissions);
         return Result.success("成功赋予该管理员权限");

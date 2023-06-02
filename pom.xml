@@ -93,6 +93,7 @@
     </dependencies>
 
     <build>
+        <finalName>pigSale</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
