@@ -94,7 +94,7 @@ export default {
     },
     methods: {
         getImgUrl(img) {
-            return `http://localhost:8080/common/download?filename=${img}`
+            return `http://localhost:9999/common/download?filename=${img}`
         },
         // 勾选选项时，更新选择的数据
         handleSelectionChange(val) {

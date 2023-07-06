@@ -73,7 +73,6 @@
                     </div>
                     <el-divider></el-divider>
 
-                    <!-- TODO 点击后跳转到商品详情页 -->
                     <el-link :href="'#/goods/' + review.productId" target="_blank" class="product-link"
                              :underline="false">
                         <div class="product-info">
@@ -153,17 +152,16 @@
         methods: {
             //显示图片，发送请求至服务端
             getImgUrl(img) {
-                return `http://localhost:8080/common/download?filename=${img}`
+                return `http://localhost:9999/common/download?filename=${img}`
             },
             showUser() {
                 this.$api.review.getUser().then(res => {
                     this.user = res.data
                 })
-                // this.user.userId = localStorage.getItem('loginID')
+                this.user.userId = localStorage.getItem('loginID')
             },
             /* 获取评论信息 */
             showReview() {
-                // this.user.userId = localStorage.getItem("loginID");
                 this.$api.review.getUserReview(this.user.userId)
                     .then(res => {
                         this.reviews = res.data

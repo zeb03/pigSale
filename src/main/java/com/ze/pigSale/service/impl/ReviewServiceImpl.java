@@ -102,4 +102,9 @@ public class ReviewServiceImpl implements ReviewService {
         reviewMapper.deleteById(reviewId);
     }
 
+    @Override
+    public void deleteByUser(Long userId) {
+
+    }
+
 }

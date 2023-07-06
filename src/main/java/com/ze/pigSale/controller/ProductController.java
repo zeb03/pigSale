@@ -12,23 +12,22 @@ import com.ze.pigSale.entity.Category;
 import com.ze.pigSale.entity.Product;
 import com.ze.pigSale.service.CategoryService;
 import com.ze.pigSale.service.ProductService;
+import com.ze.pigSale.vo.SalesVO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * author: zebii
+ * @author: zebii
  * Date: 2023-03-15-19:53
  */
 @Slf4j
@@ -44,6 +43,11 @@ public class ProductController {
     private ReviewService reviewService;
 
 
+    /**
+     * 获取某商品
+     * @param productVo
+     * @return
+     */
     @GetMapping
     public Result<ProductVo> getOne(ProductVo productVo) {
         log.info("ProductVo：{}", productVo);
@@ -61,6 +65,11 @@ public class ProductController {
         return Result.success(productVo);
     }
 
+    /**
+     * 根据id查看商品详情
+     * @param productId
+     * @return
+     */
     @GetMapping("/{productId}")
     public Result<ProductVo> detail(@PathVariable("productId") Long productId) {
         //获取商品
@@ -105,7 +114,6 @@ public class ProductController {
      * @param pageSize
      * @param keyword
      * @param categoryId
-     * @return
      */
     @GetMapping("/page")
     public Result<PageInfo<ProductVo>> page(Integer currentPage, Integer pageSize, String keyword, Long categoryId) {
@@ -142,7 +150,6 @@ public class ProductController {
      * 新增产品
      *
      * @param product
-     * @return
      */
     @PostMapping
     public Result<Product> add(@RequestBody Product product) {
@@ -156,7 +163,6 @@ public class ProductController {
      * 修改产品
      *
      * @param product
-     * @return
      */
     @PutMapping
     public Result<Product> edit(@RequestBody Product product) {
@@ -170,7 +176,6 @@ public class ProductController {
      * 移除商品
      *
      * @param productId
-     * @return
      */
     @DeleteMapping("/{productId}")
     public Result<String> delete(@PathVariable("productId") Long productId) {
@@ -179,16 +184,56 @@ public class ProductController {
     }
 
     /**
-     * 获取总销量
-     * @return
+     * 获取最近销量
+     *
      */
     @GetMapping("/salesRank")
-    public Result<Map<String, Integer>> getSalesRank() {
+    public Result<SalesVO> getSalesRank(Integer month) {
         log.info("getSalesRank");
-        Map<String, Integer> salesRank = productService.getSalesRank();
-        return Result.success(salesRank);
+
+        Map<String, Integer> salesRank = productService.getSalesRank(month);
+
+        Set<String> keySet = salesRank.keySet();
+        Collection<Integer> values = salesRank.values();
+
+        SalesVO salesVO = new SalesVO();
+        salesVO.setProductNames(keySet);
+        salesVO.setSales(values);
+
+        log.info("data:" + salesVO);
+        return Result.success(salesVO);
     }
 
+    /**
+     * 获取最近收益
+     *
+     */
+    @GetMapping("/benefit/all")
+    public Result<Map<String, BigDecimal>> getAllBenefit(Integer month) {
+        log.info("getBenefit");
+        Map<String, BigDecimal> benefit = productService.getAllBenefit(month);
+        return Result.success(benefit);
+    }
 
+    /**
+     * 获取最近一年总收益
+     *
+     */
+    @GetMapping("/benefit")
+    public Result<List<BigDecimal>> getBenefit() {
+        log.info("getBenefit");
+        List<BigDecimal> benefit = productService.getBenefit();
+        return Result.success(benefit);
+    }
 
+    /**
+     * 获取指定时间内订单成交量
+     */
+    @GetMapping("/thisYearOrders")
+    public Result<List<Integer>> getOrderCount() {
+
+        log.info("getOrderCount");
+        List<Integer> orderCount = productService.getOrderCount();
+        return Result.success(orderCount);
+    }
 }

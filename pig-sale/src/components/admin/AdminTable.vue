@@ -53,7 +53,7 @@
         },
         methods: {
             getImgUrl(img) {
-                return `http://localhost:8080/common/download?filename=${img}`
+                return `http://localhost:9999/common/download?filename=${img}`
             },
             onDeleteClick(row) {
                 console.log(row.productId)

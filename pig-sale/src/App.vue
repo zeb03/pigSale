@@ -1,9 +1,9 @@
 <template>
   <div id="app">
-    <nav>
-      <router-link to="/login">Login</router-link>|
-      <router-link to="/adminHome">Admin</router-link>
-    </nav>
+<!--    <nav>-->
+<!--      <router-link to="/login">Login</router-link>|-->
+<!--      <router-link to="/adminHome">Admin</router-link>-->
+<!--    </nav>-->
     <router-view style="height:100%">
 
     </router-view>

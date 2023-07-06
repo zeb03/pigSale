@@ -8,25 +8,27 @@ import MyOrders from '../components/menus/MyOrders.vue'
 import MyAdmin from '../components/menus/MyAdmin.vue'
 import MyUsers from '../components/menus/MyUsers.vue'
 import MyPermission from '../components/menus/MyPermission.vue'
+import MyTest from '../components/menus/test.vue'
 
 
 Vue.use(VueRouter)
 
 const routes = [
-    { path: '/', redirect: '/login' },
-    { path: '/login', component: LoginView },
+    {path: '/', redirect: '/login'},
+    {path: '/login', component: LoginView},
     {
         path: '/adminHome',
         redirect: '/adminHome/goods',
         component: AdminHomeView,
         children: [
-            { path: 'users', component: MyUsers },
-            { path: 'goods', component: MyGoods },
-            { path: 'orders', component: MyOrders },
-            { path: 'category', component: MyCategory },
-            { path: 'admin', component: MyAdmin },
-            { path: 'users', component: MyUsers },
-            { path: 'permission', component: MyPermission },
+            {path: 'users', component: MyUsers},
+            {path: 'goods', component: MyGoods},
+            {path: 'orders', component: MyOrders},
+            {path: 'category', component: MyCategory},
+            {path: 'admin', component: MyAdmin},
+            {path: 'users', component: MyUsers},
+            {path: 'permission', component: MyPermission},
+            {path: 'test', component: MyTest}
         ]
     },
 ]

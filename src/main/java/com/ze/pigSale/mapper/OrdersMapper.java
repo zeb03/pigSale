@@ -59,6 +59,15 @@ public interface OrdersMapper {
      * @return
      */
     List<Orders> getByNoReview(@Param("userId") Long userId);
+
+    /**
+     * 获取指定时间内的订单数量
+     * @param start
+     * @param end
+     * @return
+     */
+    Integer getCountByTime(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
 }
 
 

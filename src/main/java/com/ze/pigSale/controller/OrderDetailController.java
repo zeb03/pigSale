@@ -24,6 +24,11 @@ public class OrderDetailController {
     @Autowired
     private OrderDetailService orderDetailService;
 
+    /**
+     * 获取用户未评价订单
+     * @param userId
+     * @return
+     */
     @GetMapping("/review/{userId}")
     public Result<List<OrderDetailVo>> listWithNoReview(@PathVariable("userId") Long userId){
         List<OrderDetailVo> orderDetailVos = orderDetailService.getByNoReview(userId);

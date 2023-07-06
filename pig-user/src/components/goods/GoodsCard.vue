@@ -49,7 +49,7 @@
         },
         methods: {
             getImgUrl(img) {
-                return `http://localhost:8080/common/download?filename=${img}`
+                return `http://localhost:9999/common/download?filename=${img}`
             },
         }
 
@@ -62,7 +62,7 @@
         display: inline-block;
         width: 228px;
         height: 270px;
-        margin-right: 12px;
+        margin-right: 60px;
         margin-bottom: 15px;
         box-shadow: 2px 1px 5px #ccc;
         background-color: #fff;

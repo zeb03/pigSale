@@ -47,9 +47,14 @@
             );
     </select>
 
-    <select id="getList" resultType="com.ze.pigSale.entity.OrderDetail">
-        select *
-        from order_detail
+    <select id="getListByTime" resultType="com.ze.pigSale.dto.OrderDetailDto">
+        SELECT *
+        FROM order_detail t1
+                 LEft JOIN orders t2
+                           ON t2.id = t1.order_id
+        WHERE checkout_time &gt; #{time}
+          AND checkout_time &lt; #{now}
+        order by checkout_time
     </select>
 
 </mapper>

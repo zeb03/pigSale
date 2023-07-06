@@ -53,4 +53,10 @@ public interface ReviewService {
      * @param reviewId
      */
     void deleteReview(Long reviewId);
+
+    /**
+     * 删除用户评价
+     * @param userId
+     */
+    void deleteByUser(Long userId);
 }

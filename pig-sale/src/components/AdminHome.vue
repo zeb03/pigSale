@@ -52,6 +52,10 @@
                             <i class="el-icon-lock"></i>
                             <span slot="title">权限管理</span>
                         </el-menu-item>
+                        <el-menu-item index="/adminHome/test">
+                            <i class="el-icon-s-marketing"></i>
+                            <span slot="title">数据统计</span>
+                        </el-menu-item>
                     </el-menu>
                 </el-aside>
                 <el-main>

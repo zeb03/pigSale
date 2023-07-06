@@ -1,9 +1,9 @@
 <template>
   <div id="app" style="min-width: 1200px;">
-    <nav>
-      <router-link to="/login">Login</router-link>|
-      <router-link to="/userHome">User</router-link>
-    </nav>
+<!--    <nav>-->
+<!--      <router-link to="/login">Login</router-link>|-->
+<!--      <router-link to="/userHome">User</router-link>-->
+<!--    </nav>-->
     <router-view style="height:100%">
     </router-view>
   </div>

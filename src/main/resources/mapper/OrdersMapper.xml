@@ -73,6 +73,7 @@
                 <![CDATA[and checkout_time < #{endTime}]]>
             </if>
         </where>
+        order by checkout_time desc
     </select>
 
     <select id="getById" resultType="com.ze.pigSale.entity.Orders">
@@ -83,5 +84,11 @@
 
     <select id="getByNoReview" resultType="com.ze.pigSale.entity.Orders">
 
+    </select>
+    <select id="getCountByTime" resultType="java.lang.Integer">
+        select count(1)
+        from orders
+        where checkout_time &gt; #{start}
+          and checkout_time &lt; #{end}
     </select>
 </mapper>

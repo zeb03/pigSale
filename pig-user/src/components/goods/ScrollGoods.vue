@@ -1,5 +1,5 @@
 <template>
-    <div class="scroll_goods">
+    <div class="scroll_goods" >
         <slot></slot>
         <ul class="list">
             <li v-for="item in goodsList" :key="item.productId" class="list-item">

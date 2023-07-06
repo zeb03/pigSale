@@ -49,4 +49,10 @@ public interface UserPermissionService {
      * @param userPermissions
      */
     void updatePermission(List<UserPermissions> userPermissions);
+
+    /**
+     * 删除用户所有权限
+     * @param userId
+     */
+    void deleteByUser(Long userId);
 }

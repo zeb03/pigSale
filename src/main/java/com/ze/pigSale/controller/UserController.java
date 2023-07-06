@@ -7,9 +7,7 @@ import com.ze.pigSale.common.Result;
 import com.ze.pigSale.entity.Permissions;
 import com.ze.pigSale.entity.User;
 import com.ze.pigSale.entity.UserPermissions;
-import com.ze.pigSale.service.PermissionService;
-import com.ze.pigSale.service.UserPermissionService;
-import com.ze.pigSale.service.UserService;
+import com.ze.pigSale.service.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -40,6 +38,13 @@ public class UserController {
 
     @Autowired
     private PermissionService permissionService;
+
+    @Autowired
+    private CartService cartService;
+
+    @Autowired
+    private ReviewService reviewService;
+
 
     /**
      * 用户登录
@@ -192,10 +197,13 @@ public class UserController {
         return Result.success(user);
     }
 
-    // TODO:删除后把相关信息也删除
     @DeleteMapping("/{id}")
+    @Transactional(rollbackFor = Exception.class)
     public Result<String> deleteUser(@PathVariable("id") Long id) {
+        cartService.cleanCart(id);
+        reviewService.deleteByUser(id);
         userService.deleteUser(id);
+        userPermissionService.deleteByUser(id);
         return Result.success("删除成功");
     }
 

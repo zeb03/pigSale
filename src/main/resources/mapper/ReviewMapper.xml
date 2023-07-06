@@ -45,6 +45,12 @@
         where review_id = #{reviewId}
     </delete>
 
+    <delete id="deleteByUser">
+        delete
+        from review
+        where user_id = #{userId}
+    </delete>
+
     <select id="getReviewListByUser" resultType="com.ze.pigSale.entity.Review">
         select *
         from review

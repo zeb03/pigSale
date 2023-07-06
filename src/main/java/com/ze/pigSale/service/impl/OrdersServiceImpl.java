@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * author: zebii
+ * @author: zeb
  * Date: 2023-04-04-20:32
  */
 @Service
@@ -61,7 +61,7 @@ public class OrdersServiceImpl implements OrdersService {
     public PageInfo<OrdersDto> getPageWithDetail(int currentPage, int pageSize, Long ordersId, LocalDateTime beginTime, LocalDateTime endTime) {
         //判断权限
         boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.VIEW_ORDER);
-        if (!hasPermission){
+        if (!hasPermission) {
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }
 
@@ -95,7 +95,7 @@ public class OrdersServiceImpl implements OrdersService {
         return ordersDtoPageInfo;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void submit(OrdersDto ordersDto) {
         //获取用户信息
@@ -140,6 +140,10 @@ public class OrdersServiceImpl implements OrdersService {
             if (stock < item.getQuantity()) {
                 throw new CustomException("提交订单失败, 商品" + product.getProductName() + "库存不足");
             }
+
+            //减少商品库存
+            product.setStock(stock - item.getQuantity());
+            productService.updateProduct(product);
 
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrderId(ordersDto.getId());
@@ -207,7 +211,7 @@ public class OrdersServiceImpl implements OrdersService {
     public void updateStatus(Orders orders) {
         //判断权限
         boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.EDIT_ORDER);
-        if (!hasPermission){
+        if (!hasPermission) {
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }
 
@@ -225,7 +229,7 @@ public class OrdersServiceImpl implements OrdersService {
         ordersMapper.updateById(oneOrders);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void again(Orders orders) {
         //根据id获取此订单
@@ -262,11 +266,12 @@ public class OrdersServiceImpl implements OrdersService {
         ordersMapper.updateById(orders);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void agree(Orders orders) {
         //判断权限
         boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.CANCEL_ORDER);
-        if (!hasPermission){
+        if (!hasPermission) {
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }
 
@@ -274,15 +279,27 @@ public class OrdersServiceImpl implements OrdersService {
         if (oneOrders == null) {
             throw new CustomException("订单id错误");
         }
+
         oneOrders.setStatus(6);
         this.updateById(oneOrders);
+
+        //增加产品库存
+        List<OrderDetail> list = ordersDetailService.getListByOrderId(orders.getId());
+        list.stream().map(item->{
+            Long productId = item.getProductId();
+            Integer quantity = item.getQuantity();
+            Product product = productService.getProductById(productId);
+            product.setStock(product.getStock() + quantity);
+            productService.updateProduct(product);
+            return item;
+        }).collect(Collectors.toList());
     }
 
     @Override
     public void disagree(Orders orders, HttpServletRequest request) {
         //判断权限
         boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.CANCEL_ORDER);
-        if (!hasPermission){
+        if (!hasPermission) {
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }
 
@@ -305,6 +322,11 @@ public class OrdersServiceImpl implements OrdersService {
 
         //修改订单状态
         this.updateById(oneOrders);
+    }
+
+    @Override
+    public Integer getCountByTime(LocalDateTime start, LocalDateTime end) {
+        return ordersMapper.getCountByTime(start, end);
     }
 
 }

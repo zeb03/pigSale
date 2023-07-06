@@ -46,6 +46,12 @@ public interface ReviewMapper {
      * @param reviewId
      */
     void deleteById(@Param("reviewId") Long reviewId);
+
+    /**
+     * 删除用户评价
+     * @param userId
+     */
+    void deleteByUser(@Param("userId") Long userId);
 }
 
 

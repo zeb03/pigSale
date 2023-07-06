@@ -3,6 +3,9 @@ package com.ze.pigSale;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * @author zeb
+ */
 @SpringBootApplication
 public class PigSaleApplication {
 

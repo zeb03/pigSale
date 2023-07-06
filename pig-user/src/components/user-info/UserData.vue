@@ -126,7 +126,7 @@ export default {
         },
         //显示图片，发送请求至服务端
         getImgUrl(img) {
-            return `http://localhost:8080/common/download?filename=${img}`
+            return `http://localhost:9999/common/download?filename=${img}`
         },
         onClickEdit() {
             this.$router.push("./edit")

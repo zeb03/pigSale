@@ -5,13 +5,13 @@
             <!-- 左分类 -->
             <div class="w">
                 <!-- 轮播图左侧 -->
-                <sub-nav style="float: left;"></sub-nav>
+<!--                <sub-nav style="float: left;"></sub-nav>-->
                 <!-- 轮播图模块 -->
-                <div id="outer">
+                <div id="outer" style="width: 800px;">
                     <el-carousel height="361px" trigger="click">
                         <el-carousel-item v-for="item in 6" :key="item">
                             <a href="#">
-                                <img :src="'/images/a' + item + '.jpg'"
+                                <img :src="'/images/a' + item + '.jpeg'"
                                      style="object-fit: cover; width: 100%; height: 100%;" alt="">
                             </a>
                         </el-carousel-item>

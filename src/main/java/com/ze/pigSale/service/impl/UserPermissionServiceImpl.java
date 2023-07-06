@@ -84,11 +84,21 @@ public class UserPermissionServiceImpl implements UserPermissionService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updatePermission(List<UserPermissions> userPermissions) {
+        if (userPermissions == null) {
+            return;
+        }
         //先删除该用户所有的权限
         Long userId = userPermissions.get(0).getUserId();
         userPermissionsMapper.deleteByUser(userId);
         //再添加所选权限
-        this.addBatchPermission(userPermissions);
+        if (!userPermissions.isEmpty()) {
+            this.addBatchPermission(userPermissions);
+        }
+    }
+
+    @Override
+    public void deleteByUser(Long userId) {
+        userPermissionsMapper.deleteByUser(userId);
     }
 
 }

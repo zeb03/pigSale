@@ -85,4 +85,12 @@ public interface OrdersService {
      * @param request
      */
     void disagree(Orders orders, HttpServletRequest request);
+
+    /**
+     * 获取指定时间内的订单数量
+     * @param start
+     * @param end
+     * @return
+     */
+    Integer getCountByTime(LocalDateTime start, LocalDateTime end);
 }

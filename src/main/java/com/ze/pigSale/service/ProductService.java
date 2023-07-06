@@ -2,13 +2,13 @@ package com.ze.pigSale.service;
 
 import com.ze.pigSale.entity.Product;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
 /**
- * author: zebii
- * Date: 2023-03-15-20:10
+ * @author: zebii
+ * @Date: 2023-03-15-20:10
  */
 public interface ProductService {
 
@@ -55,5 +55,25 @@ public interface ProductService {
     /**
      * 获取销量排行
      */
-    Map<String, Integer> getSalesRank();
+    Map<String, Integer> getSalesRank(Integer month);
+
+
+    /**
+     * 获取各个商品的收益
+     * @param month
+     * @return
+     */
+    Map<String, BigDecimal> getAllBenefit(Integer month);
+
+    /**
+     * 获取最近收益
+     * @return
+     */
+    List<BigDecimal> getBenefit();
+
+    /**
+     * 获取订单数量
+     * @return
+     */
+    List<Integer> getOrderCount();
 }

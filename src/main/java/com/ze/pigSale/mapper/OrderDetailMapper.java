@@ -1,5 +1,6 @@
 package com.ze.pigSale.mapper;
 
+import com.ze.pigSale.dto.OrderDetailDto;
 import com.ze.pigSale.entity.OrderDetail;
 import com.ze.pigSale.entity.Product;
 import com.ze.pigSale.vo.OrderDetailVo;
@@ -38,9 +39,9 @@ public interface OrderDetailMapper {
     List<OrderDetailVo> getByNoReview(@Param("userId") Long userId);
 
     /**
-     * 获取指定时间的销量排行
+     * 获取最近的销量
      */
-    List<OrderDetail> getList();
+    List<OrderDetailDto> getListByTime(@Param("now") LocalDateTime now, @Param("time") LocalDateTime time);
 
 
 }
