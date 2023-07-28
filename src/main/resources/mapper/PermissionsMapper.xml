@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ze.pigSale.mapper.PermissionsMapper">
+
+    <resultMap id="BaseResultMap" type="com.ze.pigSale.entity.Permissions">
+            <id property="permissionId" column="permission_id" jdbcType="INTEGER"/>
+            <result property="description" column="description" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        permission_id,permission_name,description
+    </sql>
+
+    <select id="getList" resultType="com.ze.pigSale.entity.Permissions">
+        select * from permissions
+    </select>
+    <select id="getById" resultType="com.ze.pigSale.entity.Permissions">
+        select * from permissions where permission_id = #{id}
+    </select>
+    <select id="getByRoleId" resultType="com.ze.pigSale.entity.Permissions">
+        select * from role_permissions where role_id = #{roleId}
+    </select>
+</mapper>
