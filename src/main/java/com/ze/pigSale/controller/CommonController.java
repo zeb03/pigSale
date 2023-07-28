@@ -72,6 +72,7 @@ public class CommonController {
 
     @GetMapping("/download")
     public void download(String filename, HttpServletResponse response) throws IOException {
+        log.info("basePath: " + basePath);
         String[] split = filename.split("/");
         String name = split[split.length - 1];
 

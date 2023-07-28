@@ -94,9 +94,6 @@ public class UserController {
      */
     @PostMapping("/register")
     public Result<String> register(@RequestBody User user) {
-        user.setRole(0);
-        user.setStatus(1);
-        user.setImage("avatar.webp");
         userService.register(user);
         return Result.success("添加成功");
     }
@@ -124,7 +121,6 @@ public class UserController {
      */
     @DeleteMapping("/remove")
     public Result<String> remove(@RequestBody User user, HttpServletRequest request) {
-        log.info("{}", user);
         userService.removeUser(request, user);
         return Result.success("成功注销");
     }
@@ -197,6 +193,11 @@ public class UserController {
         return Result.success(user);
     }
 
+    /**
+     * 删除用户
+     * @param id
+     * @return
+     */
     @DeleteMapping("/{id}")
     @Transactional(rollbackFor = Exception.class)
     public Result<String> deleteUser(@PathVariable("id") Long id) {

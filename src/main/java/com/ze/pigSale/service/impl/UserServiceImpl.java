@@ -56,8 +56,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void register(User user) {
-        log.info("注册信息：{}", user);
-
+        //设置初始状态
+        user.setRole(0);
+        user.setStatus(1);
+        user.setImage("avatar.webp");
         User userResult = userMapper.getUserByUsernameOrPhone(user);
         if (userResult != null) {
             throw new CustomException("用户名或手机号已被注册！");
@@ -76,7 +78,6 @@ public class UserServiceImpl implements UserService {
         }
 
         PageMethod.startPage(currentPage, pageSize);
-        //待完善
         List<User> userList = null;
         if (role == 0) {
             userList = userMapper.getUserByRole(search);

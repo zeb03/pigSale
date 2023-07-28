@@ -35,6 +35,11 @@ public class ReviewController {
     @Autowired
     private OrdersService ordersService;
 
+    /**
+     * 发布评论
+     * @param review
+     * @return
+     */
     @PostMapping("/publish")
     public Result<String> publish(@RequestBody Review review) {
         log.info("review:" + review);
@@ -45,6 +50,14 @@ public class ReviewController {
         return Result.success("评论发布成功");
     }
 
+    /**
+     * 查询所有评论
+     * @param currentPage
+     * @param pageSize
+     * @param review
+     * @param queryWay
+     * @return
+     */
     @GetMapping("/page")
     public Result<PageInfo<ReviewVo>> page(Integer currentPage, Integer pageSize, Review review, Integer queryWay) {
         PageInfo<ReviewVo> reviewPageInfo = reviewService.getReviewPage(currentPage, pageSize, review, queryWay);
@@ -80,12 +93,22 @@ public class ReviewController {
         return Result.success(reviewVos);
     }
 
+    /**
+     * 编辑评论
+     * @param review
+     * @return
+     */
     @PutMapping("/edit")
     public Result<String> edit(@RequestBody Review review) {
         reviewService.updateReview(review);
         return Result.success("修改评论成功");
     }
 
+    /**
+     * 删除评论
+     * @param reviewId
+     * @return
+     */
     @DeleteMapping("/remove/{reviewId}")
     public Result<String> remove(@PathVariable("reviewId") Long reviewId) {
         reviewService.deleteReview(reviewId);

@@ -37,11 +37,8 @@ import java.util.stream.Collectors;
 public class ProductController {
 
     private ProductService productService;
-
     private CategoryService categoryService;
-
     private ReviewService reviewService;
-
 
     /**
      * 获取某商品
@@ -153,8 +150,6 @@ public class ProductController {
      */
     @PostMapping
     public Result<Product> add(@RequestBody Product product) {
-        log.info("addProduct: {}", product);
-
         productService.insertProduct(product);
         return Result.success(product);
     }
@@ -166,8 +161,6 @@ public class ProductController {
      */
     @PutMapping
     public Result<Product> edit(@RequestBody Product product) {
-        log.info("updateProduct: {}", product);
-
         productService.updateProduct(product);
         return Result.success(product);
     }
@@ -189,18 +182,16 @@ public class ProductController {
      */
     @GetMapping("/salesRank")
     public Result<SalesVO> getSalesRank(Integer month) {
-        log.info("getSalesRank");
 
         Map<String, Integer> salesRank = productService.getSalesRank(month);
-
         Set<String> keySet = salesRank.keySet();
         Collection<Integer> values = salesRank.values();
 
         SalesVO salesVO = new SalesVO();
         salesVO.setProductNames(keySet);
+
         salesVO.setSales(values);
 
-        log.info("data:" + salesVO);
         return Result.success(salesVO);
     }
 
@@ -210,7 +201,6 @@ public class ProductController {
      */
     @GetMapping("/benefit/all")
     public Result<Map<String, BigDecimal>> getAllBenefit(Integer month) {
-        log.info("getBenefit");
         Map<String, BigDecimal> benefit = productService.getAllBenefit(month);
         return Result.success(benefit);
     }
@@ -221,7 +211,6 @@ public class ProductController {
      */
     @GetMapping("/benefit")
     public Result<List<BigDecimal>> getBenefit() {
-        log.info("getBenefit");
         List<BigDecimal> benefit = productService.getBenefit();
         return Result.success(benefit);
     }
@@ -231,8 +220,6 @@ public class ProductController {
      */
     @GetMapping("/thisYearOrders")
     public Result<List<Integer>> getOrderCount() {
-
-        log.info("getOrderCount");
         List<Integer> orderCount = productService.getOrderCount();
         return Result.success(orderCount);
     }
