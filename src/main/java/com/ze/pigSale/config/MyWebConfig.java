@@ -4,9 +4,11 @@ package com.ze.pigSale.config;
 import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
 import com.ze.pigSale.common.JacksonObjectMapper;
 import com.ze.pigSale.interceptor.LoginInterceptor;
+import com.ze.pigSale.interceptor.RefreshTokenInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -21,6 +23,7 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -33,6 +36,9 @@ import java.util.List;
 @Slf4j
 public class MyWebConfig implements WebMvcConfigurer {
 
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         LoginInterceptor loginInterceptor = new LoginInterceptor();
@@ -43,6 +49,7 @@ public class MyWebConfig implements WebMvcConfigurer {
                         "/user/login",
                         "/user/register",
                         "/user/index.html",
+                        "/user/code",
                         "/user/js/**",
                         "/user/css/**",
                         "/user/images/**",
@@ -62,7 +69,10 @@ public class MyWebConfig implements WebMvcConfigurer {
                         "/doc.html",
                         "/webjars/**",
                         "/swagger-resources",
+                        "/swagger-ui.html",
+                        "/favicon.ico",
                         "/v2/api-docs");
+        registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).addPathPatterns("/**").order(0);
     }
 
     /**
@@ -100,7 +110,7 @@ public class MyWebConfig implements WebMvcConfigurer {
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 .title("猪联网电子商务")
-                .version("1.0")
+                .version("2.0")
                 .description("pigSale接口文档")
                 .build();
     }

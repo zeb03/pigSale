@@ -8,15 +8,14 @@ import com.ze.pigSale.entity.Permissions;
 import com.ze.pigSale.entity.User;
 import com.ze.pigSale.entity.UserPermissions;
 import com.ze.pigSale.service.*;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,45 +44,24 @@ public class UserController {
     @Autowired
     private ReviewService reviewService;
 
+    /**
+     * 发送手机验证码
+     */
+    @PostMapping("code")
+    public Result sendCode(@RequestParam("phone") String phone, HttpSession session) {
+        // 发送短信验证码并保存验证码
+        return userService.sendCode(phone);
+    }
 
     /**
      * 用户登录
      *
      * @param user
-     * @param request
      * @return
      */
     @PostMapping("/login")
-    public Result<User> login(@RequestBody User user, HttpServletRequest request) {
-//      将页面提交的密码password进行md5加密处理
-        String password = user.getPassword();
-        password = DigestUtils.md5DigestAsHex(password.getBytes());
-
-//      根据页面提交的用户名username查询数据库
-        User userResult = userService.getUserByName(user.getUsername());
-
-//      如果没有查询到则返回登录失败结果
-        if (userResult == null) {
-            return Result.error("用户名错误");
-        }
-
-        if (userResult.getStatus() == 3) {
-            return Result.error("该用户不存在");
-        }
-
-        if (userResult.getStatus() == 2) {
-            return Result.error("该用户已被禁用");
-        }
-
-//      密码比对，如果不一致则返回登录失败结果
-        if (!userResult.getPassword().equals(password)) {
-            return Result.error("密码错误");
-        }
-
-//      登录成功，将员工id存入Session并返回登录成功结果
-        request.getSession().getServletContext().setAttribute("user", userResult.getUserId());
-        log.info("登录成功:" + userResult.getUserId());
-        return Result.success(userResult);
+    public Result login(@RequestBody User user, @RequestParam(required = false) String code) {
+        return userService.login(user, code);
     }
 
     /**
@@ -195,6 +173,7 @@ public class UserController {
 
     /**
      * 删除用户
+     *
      * @param id
      * @return
      */

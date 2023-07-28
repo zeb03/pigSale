@@ -1,6 +1,9 @@
 package com.ze.pigSale.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.ze.pigSale.common.Result;
 import com.ze.pigSale.entity.Product;
+import com.ze.pigSale.vo.ProductVo;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -10,7 +13,7 @@ import java.util.Map;
  * @author: zebii
  * @Date: 2023-03-15-20:10
  */
-public interface ProductService {
+public interface ProductService extends IService<Product> {
 
     /**
      * 根据id查找产品
@@ -76,4 +79,6 @@ public interface ProductService {
      * @return
      */
     List<Integer> getOrderCount();
+
+    Result detail(Long productId);
 }

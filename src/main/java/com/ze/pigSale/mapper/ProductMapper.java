@@ -1,5 +1,6 @@
 package com.ze.pigSale.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ze.pigSale.entity.Product;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -14,7 +15,7 @@ import java.util.List;
 * @Entity com.ze.pigSale.entity.Product
 */
 @Mapper
-public interface ProductMapper {
+public interface ProductMapper extends BaseMapper<Product> {
 
     /**
      * 根据id查找产品

@@ -1,6 +1,8 @@
 package com.ze.pigSale.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.pagehelper.PageInfo;
+import com.ze.pigSale.common.Result;
 import com.ze.pigSale.entity.User;
 
 import javax.servlet.http.HttpServletRequest;
@@ -10,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
  * author: zebii
  * Date: 2023-03-13-15:53
  */
-public interface UserService {
+public interface UserService extends IService<User> {
     /**
      * 根据id查找用户
      * @param id
@@ -60,4 +62,8 @@ public interface UserService {
      * @param id
      */
     void deleteUser(Long id);
+
+    Result login(User user, String code);
+
+    Result sendCode(String phone);
 }

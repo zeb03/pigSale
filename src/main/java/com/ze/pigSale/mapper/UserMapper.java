@@ -1,5 +1,6 @@
 package com.ze.pigSale.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ze.pigSale.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -13,7 +14,7 @@ import java.util.List;
 * @Entity com.ze.pig.entity.User
 */
 @Mapper
-public interface UserMapper {
+public interface UserMapper extends BaseMapper<User> {
 
     /**
      * 通过id查找用户

@@ -42,7 +42,7 @@
                         message: '成功登陆',
                         type: 'success'
                     })
-                    this.$router.push('/adminHome')
+                    sessionStorage.setItem("token", data);
                     localStorage.setItem('token', 'token')
                     //保存当前登陆用户的ID
                     localStorage.setItem('loginID', 0)

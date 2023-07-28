@@ -69,39 +69,41 @@ public class ProductController {
      */
     @GetMapping("/{productId}")
     public Result<ProductVo> detail(@PathVariable("productId") Long productId) {
-        //获取商品
-        Product product = productService.getProductById(productId);
+        return productService.detail(productId);
 
-        if (product == null) {
-            throw new CustomException("无法获取商品，商品id错误");
-        }
-
-        //创建dto并复制属性
-        ProductVo productVo = new ProductVo();
-        BeanUtils.copyProperties(product, productVo);
-
-        //根据类别id获取名称并赋值
-        Category category = categoryService.getCategoryById(productVo.getCategoryId());
-        if (category != null) {
-            productVo.setCategoryName(category.getCategoryName());
-        }
-
-        //获取商品评分
-        List<Review> reviews = reviewService.getListByProduct(productId);
-        if (reviews == null || reviews.isEmpty()) {
-            productVo.setRating(0.0);
-        } else {
-            BigDecimal total = new BigDecimal(0);
-            for (Review review : reviews) {
-                total = total.add(review.getRating());
-            }
-            double totalRating = total.doubleValue();
-            double rating = totalRating / reviews.size();
-            String format = new DecimalFormat("#.0").format(rating);
-            productVo.setRating(Double.parseDouble(format));
-        }
-        log.info("rating: " + productVo.getRating());
-        return Result.success(productVo);
+//        //获取商品
+//        Product product = productService.getProductById(productId);
+//
+//        if (product == null) {
+//            throw new CustomException("无法获取商品，商品id错误");
+//        }
+//
+//        //创建dto并复制属性
+//        ProductVo productVo = new ProductVo();
+//        BeanUtils.copyProperties(product, productVo);
+//
+//        //根据类别id获取名称并赋值
+//        Category category = categoryService.getCategoryById(productVo.getCategoryId());
+//        if (category != null) {
+//            productVo.setCategoryName(category.getCategoryName());
+//        }
+//
+//        //获取商品评分
+//        List<Review> reviews = reviewService.getListByProduct(productId);
+//        if (reviews == null || reviews.isEmpty()) {
+//            productVo.setRating(0.0);
+//        } else {
+//            BigDecimal total = new BigDecimal(0);
+//            for (Review review : reviews) {
+//                total = total.add(review.getRating());
+//            }
+//            double totalRating = total.doubleValue();
+//            double rating = totalRating / reviews.size();
+//            String format = new DecimalFormat("#.0").format(rating);
+//            productVo.setRating(Double.parseDouble(format));
+//        }
+//        log.info("rating: " + productVo.getRating());
+//        return Result.success(productVo);
     }
 
     /**

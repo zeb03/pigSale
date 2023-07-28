@@ -10,11 +10,24 @@ import router from './router/index'
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 
-axios.defaults.baseURL = 'http://localhost:8080'
+axios.defaults.baseURL = 'http://localhost:9999'
 Vue.config.productionTip = false
 Vue.prototype.$https = axios
 Vue.prototype.$api = api
 Vue.use(ElementUI);
+
+// request拦截器，将用户token放入头中
+let token = sessionStorage.getItem("token");
+axios.interceptors.request.use(
+    config => {
+      if(token) config.headers['authorization'] = token
+      return config
+    },
+    error => {
+      console.log(error)
+      return Promise.reject(error)
+    }
+)
 
 new Vue({
   render: h => h(App),
