@@ -1,9 +1,11 @@
 package com.ze.pigSale.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
+import com.ze.pigSale.common.Result;
 import com.ze.pigSale.enums.PermissionEnum;
 import com.ze.pigSale.utils.CommonUtil;
 import com.ze.pigSale.utils.SnowFlake;
@@ -14,14 +16,21 @@ import com.ze.pigSale.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.ze.pigSale.common.OrderConstants.*;
+import static com.ze.pigSale.common.OrderConstants.ORDER_HAS_CANCEL;
+import static com.ze.pigSale.common.RedisConstants.FEED_ORDER_KEY;
+import static com.ze.pigSale.enums.PermissionEnum.CANCEL_ORDER;
 
 /**
  * @author: zeb
@@ -31,26 +40,24 @@ import java.util.stream.Collectors;
 @Slf4j
 public class OrdersServiceImpl implements OrdersService {
 
-    @Autowired
+    @Resource
     private OrdersMapper ordersMapper;
-
-    @Autowired
+    @Resource
     private UserService userService;
-
-    @Autowired
+    @Resource
     private AddressService addressService;
-
-    @Autowired
+    @Resource
     private CartService cartService;
-
-    @Autowired
+    @Resource
     private OrderDetailService ordersDetailService;
-
-    @Autowired
+    @Resource
     private ProductService productService;
-
-    @Autowired
+    @Resource
     private UserPermissionService userPermissionService;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private OrdersService ordersService;
 
     @Override
     public Orders getById(Long ordersId) {
@@ -327,6 +334,53 @@ public class OrdersServiceImpl implements OrdersService {
     @Override
     public Integer getCountByTime(LocalDateTime start, LocalDateTime end) {
         return ordersMapper.getCountByTime(start, end);
+    }
+
+    @Override
+    public Result<String> cancelOrders(Long ordersId, HttpServletRequest request) {
+        //获取此订单
+        Orders oneOrders = ordersService.getById(ordersId);
+
+        //判断订单状态
+        if (oneOrders == null) {
+            throw new CustomException("订单id错误");
+        }
+
+        Integer status = oneOrders.getStatus();
+        if (status.equals(ORDER_HAS_CANCEL)) {
+            throw new CustomException("该订单已取消");
+        }
+
+        if (status.equals(ORDER_NOT_PAY)) {
+            //设置订单状态
+            oneOrders.setStatus(ORDER_HAS_CANCEL);
+        } else {
+            request.getSession().setAttribute("userStatus", oneOrders.getStatus());
+            oneOrders.setStatus(ORDER_APPLY_CANCEL);
+        }
+
+        ordersService.updateById(oneOrders);
+
+        if (oneOrders.getStatus().equals(ORDER_HAS_CANCEL)) {
+            return Result.success("取消成功");
+        }
+
+        //查询相关管理员
+        //遍历数据库表，找到有订单管理权限的管理员
+        Integer permissionId = CANCEL_ORDER.getPermissionId();
+        LambdaQueryWrapper<UserPermissions> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserPermissions::getPermissionId, permissionId);
+        List<UserPermissions> list = userPermissionService.list(wrapper);
+        for (UserPermissions item : list) {
+            //以用户id为key，订单号为value，时间戳为score保存到redis
+            Long userId = item.getUserId();
+            String key = FEED_ORDER_KEY + userId;
+            stringRedisTemplate.opsForZSet().add(key, ordersId.toString(), System.currentTimeMillis());
+        }
+
+        //超时未处理则复原订单状态：https://blog.csdn.net/Anenan/article/details/126368753
+
+        return Result.success("等待管理员同意");
     }
 
 }

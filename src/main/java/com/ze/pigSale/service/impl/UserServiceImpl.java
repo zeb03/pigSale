@@ -3,39 +3,44 @@ package com.ze.pigSale.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fasterxml.jackson.databind.ser.Serializers;
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
+import com.ze.pigSale.dto.FeedBackDTO;
 import com.ze.pigSale.dto.UserDTO;
+import com.ze.pigSale.entity.Orders;
+import com.ze.pigSale.entity.Product;
 import com.ze.pigSale.entity.User;
+import com.ze.pigSale.entity.UserPermissions;
 import com.ze.pigSale.enums.PermissionEnum;
 import com.ze.pigSale.mapper.UserMapper;
+import com.ze.pigSale.service.OrdersService;
+import com.ze.pigSale.service.ProductService;
 import com.ze.pigSale.service.UserPermissionService;
 import com.ze.pigSale.service.UserService;
 import com.ze.pigSale.utils.CommonUtil;
 import com.ze.pigSale.utils.RegexUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.ze.pigSale.common.RedisConstants.*;
+import static com.ze.pigSale.enums.PermissionEnum.HANDLE_FEEDBACK;
 
 /**
  * author: zebii
@@ -45,18 +50,18 @@ import static com.ze.pigSale.common.RedisConstants.*;
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
-    @Autowired
+    @Resource
     private UserMapper userMapper;
-
-    @Autowired
+    @Resource
     private UserPermissionService userPermissionService;
-
-    @Autowired
+    @Resource
     private UserService userService;
-
     @Resource
     private StringRedisTemplate stringRedisTemplate;
-
+    @Resource
+    private ProductService productService;
+    @Resource
+    private OrdersService ordersService;
 
     @Override
     public User getUserById(Long id) {
@@ -164,7 +169,83 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public Result login(User user, String code) {
+    public Result feedback(FeedBackDTO feedBackDTO) {
+        Integer permissionId = HANDLE_FEEDBACK.getPermissionId();
+        LambdaQueryWrapper<UserPermissions> wrapper = new LambdaQueryWrapper<>();
+        log.info("permissionId:" + permissionId);
+        wrapper.eq(UserPermissions::getPermissionId, permissionId);
+        List<UserPermissions> list = userPermissionService.list(wrapper);
+        log.info("list" + list);
+        for (UserPermissions userPermissions : list) {
+            Long userId = userPermissions.getUserId();
+            String key = FEED_FEEDBACK_KEY + userId;
+            String jsonStr = JSONUtil.toJsonStr(feedBackDTO);
+            stringRedisTemplate.opsForZSet().add(key, jsonStr, System.currentTimeMillis());
+        }
+        return Result.success("反馈成功");
+    }
+
+    @Override
+    public Result messageBox() {
+        //获取当前用户
+        Long userId = BaseContext.getCurrentId();
+        //根据用户id，查找redis缓存
+        String key = "feed:*" + userId;
+        log.info("key: " + key);
+        //使用通配符匹配，获取用户收件箱
+        Set<String> keys = stringRedisTemplate.keys(key);
+        //为空则直接返回
+        if (keys == null || keys.isEmpty()) {
+            return Result.success(Collections.emptyList());
+        }
+        //创建list
+        List<Product> productList = new ArrayList<>();
+        List<Orders> orderList = new ArrayList<>();
+        List<FeedBackDTO> feedBackList = new ArrayList<>();
+        //遍历所有消息
+        for (String cacheKey : keys) {
+            Set<ZSetOperations.TypedTuple<String>> typedTuples =
+                    stringRedisTemplate.opsForZSet().
+                            reverseRangeByScoreWithScores(cacheKey, 0, System.currentTimeMillis());
+            if (typedTuples == null) {
+                continue;
+            }
+            log.info("cache key:" + cacheKey);
+            //将收件箱进行分类
+            if (cacheKey.contains(FEED_SHOP_KEY)) {
+                //收藏商品变更消息
+                productList = typedTuples.stream().map(item -> {
+                    Long productId = Long.valueOf(Objects.requireNonNull(item.getValue()));
+                    return productService.getProductById(productId);
+                }).collect(Collectors.toList());
+            } else if (cacheKey.contains(FEED_ORDER_KEY)) {
+                //订单申请消息
+                orderList = typedTuples.stream().map(item -> {
+                    Long orderId = Long.valueOf(Objects.requireNonNull(item.getValue()));
+                    log.info("order:" + orderId);
+                    Orders orders = ordersService.getById(orderId);
+                    log.info("orders:" + orders);
+                    return orders;
+                }).collect(Collectors.toList());
+            } else {
+                //用户反馈消息
+                feedBackList = typedTuples.stream().map(item -> {
+                    String value = item.getValue();
+                    return JSONUtil.toBean(value, FeedBackDTO.class);
+                }).collect(Collectors.toList());
+            }
+        }
+        //方案一：返回一个map
+        //方案二：写多个接口，多次返回
+        HashMap<String, List> map = new HashMap<>();
+        map.put("shop", productList);
+        map.put("order", orderList);
+        map.put("feedback", feedBackList);
+        return Result.success(map);
+    }
+
+    @Override
+    public Result login(User user, String code, HttpServletRequest request) {
         //判断登录方式
         if (code != null && !code.isEmpty()) {
             //验证码登录
@@ -225,12 +306,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return Result.error("该用户已被禁用");
         }
 
-
         //密码比对，如果不一致则返回登录失败结果
         if (!userResult.getPassword().equals(password)) {
             return Result.error("密码错误");
         }
 
+        request.getSession().getServletContext().setAttribute("user", userResult.getUserId());
         return Result.success(userResult);
     }
 

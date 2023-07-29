@@ -3,6 +3,7 @@ package com.ze.pigSale.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.pagehelper.PageInfo;
 import com.ze.pigSale.common.Result;
+import com.ze.pigSale.dto.FeedBackDTO;
 import com.ze.pigSale.entity.User;
 
 import javax.servlet.http.HttpServletRequest;
@@ -63,7 +64,11 @@ public interface UserService extends IService<User> {
      */
     void deleteUser(Long id);
 
-    Result login(User user, String code);
+    Result login(User user, String code,HttpServletRequest request);
 
     Result sendCode(String phone);
+
+    Result feedback(FeedBackDTO feedBackDTO);
+
+    Result messageBox();
 }

@@ -126,19 +126,22 @@ public class CacheClient {
         String json = stringRedisTemplate.opsForValue().get(key);
         // 2.判断是否存在
         if (StrUtil.isBlank(json)) {
-            // 3.查询数据库
+            // 3.不存在key，查询数据库
             R r = dbFallback.apply(id);
             if (r == null) {
-                this.setWithLogicalExpire(key, "", time, unit);
+                //为空则缓存空对象
+                this.set(key, "", CACHE_NULL_TTL, unit);
                 return null;
             }
+            //设置vo对象
             T t = resultFallBack.apply(r);
             this.setWithLogicalExpire(key, t, time, unit);
             return t;
         }
         // 4.命中，需要先把json反序列化为对象
         RedisData redisData = JSONUtil.toBean(json, RedisData.class);
-        if (redisData.getData() == null || "".equals((String)redisData.getData())){
+        //若值为空则返回
+        if (redisData.getData() == null || "".equals(redisData.getData())){
             return null;
         }
         R r = JSONUtil.toBean((JSONObject) redisData.getData(), type);

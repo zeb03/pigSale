@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
+import com.ze.pigSale.dto.FeedBackDTO;
 import com.ze.pigSale.entity.Permissions;
 import com.ze.pigSale.entity.User;
 import com.ze.pigSale.entity.UserPermissions;
@@ -11,6 +12,7 @@ import com.ze.pigSale.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,9 +47,28 @@ public class UserController {
     private ReviewService reviewService;
 
     /**
+     * 查询用户收件箱
+     * @return
+     */
+    @GetMapping("/msg/box")
+    public Result queryMessageBox() {
+        return userService.messageBox();
+    }
+
+    /**
+     * 用户反馈
+     * @param feedBackDTO
+     * @return
+     */
+    @PostMapping("/feedback")
+    public Result feedback(@RequestBody FeedBackDTO feedBackDTO){
+        return userService.feedback(feedBackDTO);
+    }
+
+    /**
      * 发送手机验证码
      */
-    @PostMapping("code")
+    @PostMapping("/code")
     public Result sendCode(@RequestParam("phone") String phone, HttpSession session) {
         // 发送短信验证码并保存验证码
         return userService.sendCode(phone);
@@ -60,8 +81,8 @@ public class UserController {
      * @return
      */
     @PostMapping("/login")
-    public Result login(@RequestBody User user, @RequestParam(required = false) String code) {
-        return userService.login(user, code);
+    public Result login(@RequestBody User user, @RequestParam(required = false) String code, HttpServletRequest request) {
+        return userService.login(user, code, request);
     }
 
     /**
@@ -106,7 +127,6 @@ public class UserController {
     /**
      * 添加管理员
      * 待完善，可以给管理员各种权限
-     *
      * @param user
      * @return
      */

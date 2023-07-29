@@ -23,7 +23,8 @@ public enum PermissionEnum {
     EDIT_USER(8,"编辑用户"),
     EDIT_ADMIN(9,"编辑管理员"),
     ADD_ADMIN(10,"添加管理员"),
-    VIEW_DATA(11,"查看数据");
+    VIEW_DATA(11,"查看数据"),
+    HANDLE_FEEDBACK(12,"查看数据");
 
     /**
      * 权限id

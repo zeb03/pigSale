@@ -1,6 +1,7 @@
 package com.ze.pigSale.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.github.pagehelper.PageInfo;
 import com.ze.pigSale.common.Result;
 import com.ze.pigSale.entity.Product;
 import com.ze.pigSale.vo.ProductVo;
@@ -81,4 +82,10 @@ public interface ProductService extends IService<Product> {
     List<Integer> getOrderCount();
 
     Result detail(Long productId);
+
+    Result collectProduct(Long productId);
+
+    Result getCollections();
+
+    Result<PageInfo<ProductVo>> getPage(Integer currentPage, Integer pageSize, String keyword, Long categoryId);
 }

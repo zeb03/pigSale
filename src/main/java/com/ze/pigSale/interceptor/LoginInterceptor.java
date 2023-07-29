@@ -40,13 +40,13 @@ public class LoginInterceptor implements HandlerInterceptor {
 
         Long user = (Long) request.getSession().getServletContext().getAttribute("user");
         if (user != null) {
-            log.info("用户线程id: {}", Thread.currentThread().getId());
+            log.info("用户id:" + user);
             BaseContext.setCurrentId(user);
             return true;
         }
         log.info("用户未登录");
 //        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.getWriter().write(JSON.toJSONString(Result.error(401,"not login")));
+        response.getWriter().write(JSON.toJSONString(Result.error(401, "not login")));
         return false;
     }
 

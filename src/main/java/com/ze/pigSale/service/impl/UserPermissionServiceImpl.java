@@ -1,11 +1,13 @@
 package com.ze.pigSale.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.entity.Permissions;
 import com.ze.pigSale.entity.User;
 import com.ze.pigSale.entity.UserPermissions;
 import com.ze.pigSale.enums.PermissionEnum;
+import com.ze.pigSale.mapper.UserMapper;
 import com.ze.pigSale.mapper.UserPermissionsMapper;
 import com.ze.pigSale.service.PermissionService;
 import com.ze.pigSale.service.UserPermissionService;
@@ -22,7 +24,7 @@ import java.util.List;
  * Date: 2023-04-09-16:10
  */
 @Service
-public class UserPermissionServiceImpl implements UserPermissionService {
+public class UserPermissionServiceImpl extends ServiceImpl<UserPermissionsMapper, UserPermissions> implements UserPermissionService {
 
     @Autowired
     private UserPermissionsMapper userPermissionsMapper;

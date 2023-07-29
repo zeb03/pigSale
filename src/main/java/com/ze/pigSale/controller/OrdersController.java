@@ -1,25 +1,20 @@
 package com.ze.pigSale.controller;
 
-import com.github.pagehelper.Page;
+
 import com.github.pagehelper.PageInfo;
-import com.ze.pigSale.common.BaseContext;
-import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
 import com.ze.pigSale.dto.OrdersDto;
 import com.ze.pigSale.dto.TimeDto;
 import com.ze.pigSale.entity.Orders;
 import com.ze.pigSale.service.OrdersService;
-import com.ze.pigSale.service.impl.OrdersServiceImpl;
-import com.ze.pigSale.utils.SnowFlake;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.lang.reflect.Array;
+
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+
 
 /**
  * author: zebii
@@ -30,7 +25,7 @@ import java.util.List;
 @RequestMapping("/orders")
 public class OrdersController {
 
-    @Autowired
+    @Resource
     private OrdersService ordersService;
 
     /**
@@ -102,6 +97,7 @@ public class OrdersController {
         return Result.success("提交成功");
     }
 
+
     /**
      * 取消订单或退款
      *
@@ -111,35 +107,7 @@ public class OrdersController {
      */
     @DeleteMapping("/cancel/{ordersId}")
     public Result<String> cancel(@PathVariable("ordersId") Long ordersId, HttpServletRequest request) {
-
-        //获取此订单
-        Orders oneOrders = ordersService.getById(ordersId);
-
-        //判断订单状态
-        if (oneOrders == null) {
-            throw new CustomException("订单id错误");
-        }
-
-        Integer status = oneOrders.getStatus();
-        if (status == 6) {
-            throw new CustomException("该订单已取消");
-        }
-
-        if (status == 1) {
-            //设置订单状态
-            oneOrders.setStatus(6);
-        } else {
-            request.getSession().setAttribute("userStatus", oneOrders.getStatus());
-            oneOrders.setStatus(5);
-        }
-
-        ordersService.updateById(oneOrders);
-
-        if (oneOrders.getStatus() == 6) {
-            return Result.success("取消成功");
-        }
-
-        return Result.success("等待管理员同意");
+        return ordersService.cancelOrders(ordersId, request);
     }
 
     /**

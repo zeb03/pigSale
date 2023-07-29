@@ -1,5 +1,6 @@
 package com.ze.pigSale.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ze.pigSale.entity.User;
 import com.ze.pigSale.entity.UserPermissions;
 import com.ze.pigSale.service.UserPermissionService;
@@ -15,7 +16,7 @@ import java.util.List;
 * @Entity com.ze.pigSale.entity.UserPermissionService
 */
 @Mapper
-public interface UserPermissionsMapper {
+public interface UserPermissionsMapper extends BaseMapper<UserPermissions> {
     /**
      * 通过id获取
      * @param id

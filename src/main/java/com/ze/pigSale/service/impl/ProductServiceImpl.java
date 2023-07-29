@@ -3,7 +3,11 @@ package com.ze.pigSale.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.pagehelper.PageInfo;
+import com.github.pagehelper.page.PageMethod;
+import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
 import com.ze.pigSale.dto.OrderDetailDto;
@@ -17,8 +21,10 @@ import com.ze.pigSale.utils.CommonUtil;
 import com.ze.pigSale.vo.ProductVo;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,8 +37,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.ze.pigSale.common.RedisConstants.CACHE_SHOP_KEY;
-import static com.ze.pigSale.common.RedisConstants.CACHE_SHOP_TTL;
+import static com.ze.pigSale.common.RedisConstants.*;
 
 /**
  * author: zebii
@@ -42,29 +47,32 @@ import static com.ze.pigSale.common.RedisConstants.CACHE_SHOP_TTL;
 @Slf4j
 public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> implements ProductService {
 
-    @Autowired
+    @Resource
     private ProductMapper productMapper;
 
-    @Autowired
+    @Resource
     private CartService cartService;
 
-    @Autowired
+    @Resource
     private OrdersService ordersService;
 
-    @Autowired
+    @Resource
     private UserPermissionService userPermissionService;
 
-    @Autowired
+    @Resource
     private OrderDetailMapper orderDetailMapper;
 
-    @Autowired
+    @Resource
     private CategoryService categoryService;
 
-    @Autowired
+    @Resource
     private ReviewService reviewService;
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+
+    @Resource
+    private CacheClient cacheClient;
 
 
     @Override
@@ -110,6 +118,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         //删除redis缓存
         stringRedisTemplate.delete(CACHE_SHOP_KEY + product.getProductId());
 
+        //消息推送
+        this.sendMessage(product.getProductId());
+
         //若购物车存在该商品，则也要进行修改
         Cart cart = cartService.getCart(product.getProductId());
         if (cart != null) {
@@ -123,6 +134,26 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         }
     }
 
+    @Resource
+    private UserProductService userProductService;
+
+    private void sendMessage(Long productId) {
+        log.info("productId" + productId);
+        //查看所有收藏商品的用户
+        LambdaQueryWrapper<UserProduct> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserProduct::getProductId, productId);
+        List<UserProduct> list = userProductService.list(wrapper);
+        log.info("list" + list);
+        //获取用户id
+        List<Long> userList = list.stream().map(UserProduct::getUserId).collect(Collectors.toList());
+
+        //将消息发送到对应用户的收件箱，以用户标识为key，以产品id为value，以时间戳为score
+        for (Long userId : userList) {
+            String key = FEED_SHOP_KEY + userId;
+            stringRedisTemplate.opsForZSet().add(key, productId.toString(), System.currentTimeMillis());
+        }
+    }
+
     @Override
     public void deleteProduct(Long productId) {
         //判断权限
@@ -130,6 +161,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         if (!hasPermission) {
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }
+        //删除redis缓存
+        stringRedisTemplate.delete(CACHE_SHOP_KEY + productId);
         productMapper.deleteProduct(productId);
     }
 
@@ -274,14 +307,13 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         return orderCount;
     }
 
-    @Resource
-    private CacheClient cacheClient;
-
     @Override
     public Result detail(Long productId) {
         ProductVo productVo = cacheClient.queryVoWithLogicalExpire(CACHE_SHOP_KEY, productId, Product.class, productMapper::getProductById,
                 ProductVo.class, this::setProductVo, CACHE_SHOP_TTL, TimeUnit.MINUTES);
-//        //从redis获取
+        return Result.success(productVo);
+        //解决缓存穿透
+//        //从redis获取json字符串
 //        String jsonStr = stringRedisTemplate.opsForValue().get(CACHE_SHOP_KEY + productId);
 //        //如果存在则返回
 //        if (StringUtil.isNotBlank(jsonStr)) {
@@ -321,7 +353,92 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 //
 //        //保存到redis
 //        stringRedisTemplate.opsForValue().set(CACHE_SHOP_KEY + productId, JSONUtil.toJsonStr(productVo), CACHE_SHOP_TTL, TimeUnit.MINUTES);
-        return Result.success(productVo);
+    }
+
+    @Override
+    public Result collectProduct(Long productId) {
+        Long userId = BaseContext.getCurrentId();
+        log.info("user:" + userId);
+        String key = COLLECT_USER_KEY + userId;
+        //查询zset集合
+        Double score = stringRedisTemplate.opsForZSet().score(key, productId.toString());
+        if (score == null) {
+            //加入收藏集合
+            UserProduct userProduct = new UserProduct();
+            userProduct.setUserId(userId);
+            userProduct.setProductId(productId);
+            userProductService.saveOrUpdate(userProduct);
+            //以用户标识为key，以商品id为value，以时间戳为score存入zset
+            stringRedisTemplate.opsForZSet().add(key, String.valueOf(productId), System.currentTimeMillis());
+            return Result.success("收藏成功");
+        }
+        //已收藏过，取消收藏
+        LambdaQueryWrapper<UserProduct> wrapper = new LambdaQueryWrapper<>();
+        wrapper.ge(UserProduct::getUserId, userId).ge(UserProduct::getProductId, productId);
+        userProductService.remove(wrapper);
+        stringRedisTemplate.opsForZSet().remove(key, productId.toString());
+        return Result.success("取消收藏成功");
+    }
+
+    @Override
+    public Result getCollections() {
+        //获取用户id
+        Long userId = BaseContext.getCurrentId();
+        String key = COLLECT_USER_KEY + userId;
+        //查询用户zset收藏集合
+        Set<ZSetOperations.TypedTuple<String>> typedTuples = stringRedisTemplate.opsForZSet().reverseRangeByScoreWithScores(key, 0, System.currentTimeMillis());
+        if (typedTuples == null) {
+            return Result.success(Collections.emptyList());
+        }
+        //根据id查询商品
+        List<Product> list =
+                typedTuples.stream().map(item -> {
+                    if (item.getValue() == null) {
+                        return null;
+                    }
+                    Long productId = Long.valueOf(item.getValue());
+                    Product product = this.getProductById(productId);
+                    if (product == null) {
+                        //若商品下架，则从缓存移出
+                        stringRedisTemplate.opsForZSet().remove(key, productId);
+                        throw new CustomException("商品已下架");
+                    }
+                    return product;
+                }).collect(Collectors.toList());
+        log.info("List:" + list);
+        //根据ids查询数据库
+        return Result.success(list);
+    }
+
+    @Override
+    public Result<PageInfo<ProductVo>> getPage(Integer currentPage, Integer pageSize, String keyword, Long categoryId) {
+        PageMethod.startPage(currentPage, pageSize);
+        List<Product> productList = this.getProductList(keyword, categoryId);
+
+        PageInfo<Product> sourcePageInfo = new PageInfo<>(productList);
+        PageInfo<ProductVo> targetPageInfo = new PageInfo<>();
+
+        BeanUtils.copyProperties(sourcePageInfo, targetPageInfo);
+
+        List<ProductVo> productVoList = productList.stream().map((item -> {
+            //创建dto
+            ProductVo productVo = new ProductVo();
+            BeanUtils.copyProperties(item, productVo);
+
+            //获取种类名
+            Long id = productVo.getCategoryId();
+            Category category = categoryService.getCategoryById(id);
+
+            if (category != null) {
+                String name = category.getCategoryName();
+                productVo.setCategoryName(name);
+            }
+
+            return productVo;
+        })).collect(Collectors.toList());
+
+        targetPageInfo.setList(productVoList);
+        return Result.success(targetPageInfo);
     }
 
     private ProductVo setProductVo(Product product) {

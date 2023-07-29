@@ -1,6 +1,7 @@
 package com.ze.pigSale.service;
 
 import com.github.pagehelper.PageInfo;
+import com.ze.pigSale.common.Result;
 import com.ze.pigSale.dto.OrdersDto;
 import com.ze.pigSale.entity.Orders;
 
@@ -93,4 +94,6 @@ public interface OrdersService {
      * @return
      */
     Integer getCountByTime(LocalDateTime start, LocalDateTime end);
+
+    Result<String> cancelOrders(Long ordersId, HttpServletRequest request);
 }

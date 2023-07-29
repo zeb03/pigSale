@@ -1,5 +1,6 @@
 package com.ze.pigSale.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.ze.pigSale.entity.User;
 import com.ze.pigSale.entity.UserPermissions;
 import com.ze.pigSale.enums.PermissionEnum;
@@ -10,7 +11,7 @@ import java.util.List;
  * Date: 2023-04-09-16:09
  * @author ze
  */
-public interface UserPermissionService {
+public interface UserPermissionService extends IService<UserPermissions> {
     /**
      * 获取用户权限
      * @param userId
