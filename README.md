@@ -1,39 +1,10 @@
 # pigSale
-
-#### 介绍 
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
-
-#### 软件架构
-软件架构说明
-
-
-#### 安装教程
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
-
-
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+猪联网电子商务平台（项目持续更新中...V2.0）
+### 技术栈：SpringBoot、MySQL、Redis
+### 项目描述：为规模养猪场量身打造的猪产品线上交易平台，是基于互联网时代下提倡的猪销售新模式，提供销售渠道，让养殖场销售工作实现数字化管理。实现了商品管理、权限管理、订单管理、消息推送等功能。
+### 项目内容：
+1.	实现用户登录功能，使用token完成身份验证，Redis保存短信验证码和用户信息并设置有效时间。
+2.	实现商品的增删改查功能，使用Redis缓存商品信息，使用逻辑过期解决缓存击穿问题，提高了查询效率。
+3.	实现评论点赞功能，使用Redis中的zset类型存储数据，同时根据点赞时间保证数据有序。
+4.	根据Redis的zset实现收藏商品价格变更消息推送，用户退款提醒和用户反馈信息推送，使用Feed流的推模式将消息直接发送到用户收件箱。
+5.	利用ECharts进行数据统计，提供了数据可视化报表。
