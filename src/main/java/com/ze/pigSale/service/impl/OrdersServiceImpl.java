@@ -9,13 +9,12 @@ import com.ze.pigSale.common.Result;
 import com.ze.pigSale.enums.PermissionEnum;
 import com.ze.pigSale.utils.CommonUtil;
 import com.ze.pigSale.utils.SnowFlake;
-import com.ze.pigSale.dto.OrdersDto;
+import com.ze.pigSale.dto.OrdersDTO;
 import com.ze.pigSale.entity.*;
 import com.ze.pigSale.mapper.OrdersMapper;
 import com.ze.pigSale.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,9 +26,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.ze.pigSale.common.OrderConstants.*;
-import static com.ze.pigSale.common.OrderConstants.ORDER_HAS_CANCEL;
-import static com.ze.pigSale.common.RedisConstants.FEED_ORDER_KEY;
+import static com.ze.pigSale.constants.OrderConstants.*;
+import static com.ze.pigSale.constants.OrderConstants.ORDER_HAS_CANCEL;
+import static com.ze.pigSale.constants.RedisConstants.FEED_ORDER_KEY;
 import static com.ze.pigSale.enums.PermissionEnum.CANCEL_ORDER;
 
 /**
@@ -65,7 +64,7 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
-    public PageInfo<OrdersDto> getPageWithDetail(int currentPage, int pageSize, Long ordersId, LocalDateTime beginTime, LocalDateTime endTime) {
+    public PageInfo<OrdersDTO> getPageWithDetail(int currentPage, int pageSize, Long ordersId, LocalDateTime beginTime, LocalDateTime endTime) {
         //判断权限
         boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.VIEW_ORDER);
         if (!hasPermission) {
@@ -79,14 +78,14 @@ public class OrdersServiceImpl implements OrdersService {
         List<Orders> orders = ordersMapper.listByTime(ordersId, beginTime, endTime);
 
         PageInfo<Orders> ordersPageInfo = new PageInfo<>(orders);
-        PageInfo<OrdersDto> ordersDtoPageInfo = new PageInfo<>();
+        PageInfo<OrdersDTO> ordersDtoPageInfo = new PageInfo<>();
 
         BeanUtils.copyProperties(ordersPageInfo, ordersDtoPageInfo);
 
         log.info("order/page:{}", ordersPageInfo);
         //查询订单下所有商品
-        List<OrdersDto> ordersDtos = orders.stream().map(item -> {
-            OrdersDto ordersDto = new OrdersDto();
+        List<OrdersDTO> ordersDtos = orders.stream().map(item -> {
+            OrdersDTO ordersDto = new OrdersDTO();
             BeanUtils.copyProperties(item, ordersDto);
 
             List<OrderDetail> orderDetails = ordersDetailService.getListByOrderId(item.getId());
@@ -104,7 +103,7 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void submit(OrdersDto ordersDto) {
+    public void submit(OrdersDTO ordersDto) {
         //获取用户信息
         Long userId = BaseContext.getCurrentId();
         User user = userService.getUserById(userId);
@@ -186,7 +185,7 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
-    public PageInfo<OrdersDto> getListByUserId(int currentPage, int pageSize, LocalDateTime beginTime, LocalDateTime endTime) {
+    public PageInfo<OrdersDTO> getListByUserId(int currentPage, int pageSize, LocalDateTime beginTime, LocalDateTime endTime) {
         //开启分页
         PageMethod.startPage(currentPage, pageSize);
 
@@ -196,12 +195,12 @@ public class OrdersServiceImpl implements OrdersService {
 
         //获取pageInfo
         PageInfo<Orders> ordersPageInfo = new PageInfo<>(orders);
-        PageInfo<OrdersDto> ordersDtoPageInfo = new PageInfo<>();
+        PageInfo<OrdersDTO> ordersDtoPageInfo = new PageInfo<>();
         BeanUtils.copyProperties(ordersPageInfo, ordersDtoPageInfo);
 
         //设置订单详情
-        List<OrdersDto> ordersDtos = orders.stream().map(item -> {
-            OrdersDto ordersDto = new OrdersDto();
+        List<OrdersDTO> ordersDtos = orders.stream().map(item -> {
+            OrdersDTO ordersDto = new OrdersDTO();
             BeanUtils.copyProperties(item, ordersDto);
 
             List<OrderDetail> orderDetails = ordersDetailService.getListByOrderId(item.getId());

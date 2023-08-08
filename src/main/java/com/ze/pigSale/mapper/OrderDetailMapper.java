@@ -1,8 +1,7 @@
 package com.ze.pigSale.mapper;
 
-import com.ze.pigSale.dto.OrderDetailDto;
+import com.ze.pigSale.dto.OrderDetailDTO;
 import com.ze.pigSale.entity.OrderDetail;
-import com.ze.pigSale.entity.Product;
 import com.ze.pigSale.vo.OrderDetailVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -41,7 +40,7 @@ public interface OrderDetailMapper {
     /**
      * 获取最近的销量
      */
-    List<OrderDetailDto> getListByTime(@Param("now") LocalDateTime now, @Param("time") LocalDateTime time);
+    List<OrderDetailDTO> getListByTime(@Param("now") LocalDateTime now, @Param("time") LocalDateTime time);
 
 
 }

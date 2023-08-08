@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  * @Date: 2023-04-20-16:49
  */
 @Data
-public class TimeDto {
+public class TimeDTO {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime beginTime;
 

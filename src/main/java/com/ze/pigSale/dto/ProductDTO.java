@@ -1,6 +1,5 @@
 package com.ze.pigSale.dto;
 
-import com.ze.pigSale.entity.Product;
 import lombok.Data;
 
 /**
@@ -8,7 +7,7 @@ import lombok.Data;
  * @Date: 2023-04-16-18:52
  */
 @Data
-public class ProductDto{
+public class ProductDTO {
 
     private Integer currentPage;
 

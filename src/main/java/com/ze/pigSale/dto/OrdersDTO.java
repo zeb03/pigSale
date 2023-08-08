@@ -11,7 +11,7 @@ import java.util.List;
  * Date: 2023-04-04-20:28
  */
 @Data
-public class OrdersDto extends Orders {
+public class OrdersDTO extends Orders {
     private List<OrderDetail> orderDetails;
     private List<Long> cartItemIds;
 }

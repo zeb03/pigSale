@@ -1,4 +1,4 @@
-package com.ze.pigSale.common;
+package com.ze.pigSale.constants;
 
 public class RedisConstants {
     public static final String DEFAULT_USERNAME = "user_";

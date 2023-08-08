@@ -2,12 +2,11 @@ package com.ze.pigSale.service;
 
 import com.github.pagehelper.PageInfo;
 import com.ze.pigSale.common.Result;
-import com.ze.pigSale.dto.OrdersDto;
+import com.ze.pigSale.dto.OrdersDTO;
 import com.ze.pigSale.entity.Orders;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * author: zebii
@@ -33,14 +32,14 @@ public interface OrdersService {
      * @param endTime
      * @return
      */
-    PageInfo<OrdersDto> getPageWithDetail(int currentPage, int pageSize, Long ordersId, LocalDateTime beginTime, LocalDateTime endTime);
+    PageInfo<OrdersDTO> getPageWithDetail(int currentPage, int pageSize, Long ordersId, LocalDateTime beginTime, LocalDateTime endTime);
 
     /**
      * 提交订单
      *
      * @param ordersDto
      */
-    void submit(OrdersDto ordersDto);
+    void submit(OrdersDTO ordersDto);
 
     /**
      * 查看用户的所有订单
@@ -50,7 +49,7 @@ public interface OrdersService {
      * @param endTime
      * @return
      */
-    PageInfo<OrdersDto> getListByUserId(int currentPage, int pageSize, LocalDateTime beginTime, LocalDateTime endTime);
+    PageInfo<OrdersDTO> getListByUserId(int currentPage, int pageSize, LocalDateTime beginTime, LocalDateTime endTime);
 
     /**
      * 修改订单

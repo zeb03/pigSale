@@ -45,6 +45,7 @@ public class MyWebConfig implements WebMvcConfigurer {
         registry.addInterceptor(loginInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns(
+                        "/es/**",
                         "/img/**",
                         "/user/login",
                         "/user/register",

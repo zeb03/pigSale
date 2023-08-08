@@ -22,7 +22,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.ze.pigSale.common.RedisConstants.CACHE_SHOP_KEY;
+import static com.ze.pigSale.constants.RedisConstants.CACHE_SHOP_KEY;
 
 @Slf4j
 @SpringBootTest

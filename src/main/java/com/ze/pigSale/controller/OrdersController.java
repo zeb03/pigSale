@@ -3,8 +3,8 @@ package com.ze.pigSale.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.ze.pigSale.common.Result;
-import com.ze.pigSale.dto.OrdersDto;
-import com.ze.pigSale.dto.TimeDto;
+import com.ze.pigSale.dto.OrdersDTO;
+import com.ze.pigSale.dto.TimeDTO;
 import com.ze.pigSale.entity.Orders;
 import com.ze.pigSale.service.OrdersService;
 import lombok.extern.slf4j.Slf4j;
@@ -39,8 +39,8 @@ public class OrdersController {
      * @return
      */
     @GetMapping("admin/page")
-    public Result<PageInfo<OrdersDto>> page(Integer currentPage, Integer pageSize, Long ordersId, LocalDateTime beginTime, LocalDateTime endTime) {
-        PageInfo<OrdersDto> pageInfo = ordersService.getPageWithDetail(currentPage, pageSize, ordersId, beginTime, endTime);
+    public Result<PageInfo<OrdersDTO>> page(Integer currentPage, Integer pageSize, Long ordersId, LocalDateTime beginTime, LocalDateTime endTime) {
+        PageInfo<OrdersDTO> pageInfo = ordersService.getPageWithDetail(currentPage, pageSize, ordersId, beginTime, endTime);
         return Result.success(pageInfo);
     }
 
@@ -51,7 +51,7 @@ public class OrdersController {
      * @return
      */
     @PostMapping("/submit")
-    public Result<String> submit(@RequestBody OrdersDto ordersDto) {
+    public Result<String> submit(@RequestBody OrdersDTO ordersDto) {
         log.info("订单数据：{}", ordersDto);
         ordersService.submit(ordersDto);
         return Result.success("下单成功");
@@ -65,9 +65,9 @@ public class OrdersController {
      * @return
      */
     @GetMapping("/user/page")
-    public Result<PageInfo<OrdersDto>> page(int currentPage, int pageSize, TimeDto timeDto) {
+    public Result<PageInfo<OrdersDTO>> page(int currentPage, int pageSize, TimeDTO timeDto) {
         log.info("{}", timeDto);
-        PageInfo<OrdersDto> ordersDtoPageInfo = ordersService.getListByUserId(currentPage, pageSize, timeDto.getBeginTime(), timeDto.getEndTime());
+        PageInfo<OrdersDTO> ordersDtoPageInfo = ordersService.getListByUserId(currentPage, pageSize, timeDto.getBeginTime(), timeDto.getEndTime());
         return Result.success(ordersDtoPageInfo);
     }
 

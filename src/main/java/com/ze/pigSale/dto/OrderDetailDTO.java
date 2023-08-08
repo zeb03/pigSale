@@ -11,6 +11,6 @@ import java.time.LocalDateTime;
  */
 
 @Data
-public class OrderDetailDto extends OrderDetail {
+public class OrderDetailDTO extends OrderDetail {
     private LocalDateTime checkoutTime;
 }

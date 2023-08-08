@@ -36,18 +36,29 @@ public class ProductController {
     private ProductService productService;
     private CategoryService categoryService;
 
+    /**
+     * 收藏商品
+     *
+     * @param productId
+     * @return
+     */
     @PutMapping("/collect/{productId}")
     public Result collectProduct(@PathVariable("productId") Long productId) {
         return productService.collectProduct(productId);
     }
 
+    /**
+     * 获取收藏列表
+     *
+     * @return
+     */
     @GetMapping("/collections")
     public Result getCollections() {
         return productService.getCollections();
     }
 
     /**
-     * 根据id查看商品详情
+     * 查看商品详情
      *
      * @param productId
      * @return

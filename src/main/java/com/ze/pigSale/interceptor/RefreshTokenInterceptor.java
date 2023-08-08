@@ -14,8 +14,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.ze.pigSale.common.RedisConstants.LOGIN_USER_KEY;
-import static com.ze.pigSale.common.RedisConstants.LOGIN_USER_TTL;
+import static com.ze.pigSale.constants.RedisConstants.LOGIN_USER_KEY;
+import static com.ze.pigSale.constants.RedisConstants.LOGIN_USER_TTL;
 
 @Slf4j
 @Component

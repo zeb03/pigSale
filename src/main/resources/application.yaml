@@ -21,6 +21,20 @@ spring:
         time-between-eviction-runs: 10s
   jackson:
     default-property-inclusion: non_null # JSON处理时忽略空字段
+  data:
+    elasticsearch:
+      repositories:
+        enabled: true
+  elasticsearch:
+    rest:
+      uris: 192.168.77.131:9200
+  rabbitmq:
+    host: 192.168.77.131 # rabbitMQ的ip地址
+    port: 5672 # 端口
+    username: root
+    password: abc123
+    virtual-host: /
+
 
 #指定Mybatis的Mapper文件
 mybatis:
@@ -28,9 +42,10 @@ mybatis:
   type-aliases-package: com.ze.pigSale.entity
   configuration:
     map-underscore-to-camel-case: true
-
+#图片存储路径
 pigSale:
   path: D:\temp\
+#MP
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.ze.pigSale.entity

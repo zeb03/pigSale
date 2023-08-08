@@ -47,7 +47,7 @@
             );
     </select>
 
-    <select id="getListByTime" resultType="com.ze.pigSale.dto.OrderDetailDto">
+    <select id="getListByTime" resultType="com.ze.pigSale.dto.OrderDetailDTO">
         SELECT *
         FROM order_detail t1
                  LEft JOIN orders t2

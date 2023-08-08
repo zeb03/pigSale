@@ -1,4 +1,4 @@
-package com.ze.pigSale.common;
+package com.ze.pigSale.constants;
 
 /**
  * @author zeb

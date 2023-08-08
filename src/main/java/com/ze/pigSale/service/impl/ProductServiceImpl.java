@@ -1,8 +1,6 @@
 package com.ze.pigSale.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.json.JSONUtil;
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageInfo;
@@ -10,7 +8,7 @@ import com.github.pagehelper.page.PageMethod;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
-import com.ze.pigSale.dto.OrderDetailDto;
+import com.ze.pigSale.dto.OrderDetailDTO;
 import com.ze.pigSale.entity.*;
 import com.ze.pigSale.enums.PermissionEnum;
 import com.ze.pigSale.mapper.OrderDetailMapper;
@@ -19,10 +17,9 @@ import com.ze.pigSale.service.*;
 import com.ze.pigSale.utils.CacheClient;
 import com.ze.pigSale.utils.CommonUtil;
 import com.ze.pigSale.vo.ProductVo;
-import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
@@ -37,7 +34,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.ze.pigSale.common.RedisConstants.*;
+import static com.ze.pigSale.constants.MqConstants.*;
+import static com.ze.pigSale.constants.RedisConstants.*;
 
 /**
  * author: zebii
@@ -74,6 +72,12 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     @Resource
     private CacheClient cacheClient;
 
+    @Resource
+    private RabbitTemplate rabbitTemplate;
+
+    @Resource
+    private UserProductService userProductService;
+
 
     @Override
     public Product getProductById(Long id) {
@@ -98,9 +102,15 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }
 
+        //设置时间
         product.setCreateTime(LocalDateTime.now());
         product.setUpdateTime(LocalDateTime.now());
+
+        //添加
         productMapper.insertProduct(product);
+
+        //将消息发布到队列，同步到es
+        rabbitTemplate.convertAndSend(EXCHANGE_NAME, INSERT_KEY, product.getProductId());
     }
 
     @Override
@@ -132,10 +142,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             cart.setImage(image);
             cartService.updateCartById(cart);
         }
+        //将消息发布到队列，同步到es
+        rabbitTemplate.convertAndSend(EXCHANGE_NAME, INSERT_KEY, product.getProductId());
     }
-
-    @Resource
-    private UserProductService userProductService;
 
     private void sendMessage(Long productId) {
         log.info("productId" + productId);
@@ -161,9 +170,11 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         if (!hasPermission) {
             throw new CustomException(CommonUtil.NOT_PERMISSION);
         }
+        productMapper.deleteProduct(productId);
         //删除redis缓存
         stringRedisTemplate.delete(CACHE_SHOP_KEY + productId);
-        productMapper.deleteProduct(productId);
+        //将消息发布到队列，同步到es
+        rabbitTemplate.convertAndSend(EXCHANGE_NAME, DELETE_KEY, productId);
     }
 
     @Override
@@ -180,7 +191,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         log.info("now:" + now);
         log.info("time:" + time);
 
-        List<OrderDetailDto> list = orderDetailMapper.getListByTime(now, time);
+        List<OrderDetailDTO> list = orderDetailMapper.getListByTime(now, time);
 
         HashMap<String, Integer> rankMap = new LinkedHashMap<>();
 
@@ -221,7 +232,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         log.info("now:" + now);
         log.info("time:" + time);
 
-        List<OrderDetailDto> list = orderDetailMapper.getListByTime(now, time);
+        List<OrderDetailDTO> list = orderDetailMapper.getListByTime(now, time);
 
         HashMap<String, BigDecimal> benefitMap = new LinkedHashMap<>();
 
@@ -267,7 +278,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             LocalDateTime endDateTime = yearMonth.atEndOfMonth().atTime(23, 59, 59);
 
             // 根据YearMonth查询对应的订单详情列表
-            List<OrderDetailDto> orders = orderDetailMapper.getListByTime(endDateTime, startDateTime);
+            List<OrderDetailDTO> orders = orderDetailMapper.getListByTime(endDateTime, startDateTime);
 
             // 计算月份收益
             BigDecimal monthlyTotal = calculateMonthlyBenefit(orders);
@@ -468,10 +479,10 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 
 
     // 根据订单详情计算月收益
-    private BigDecimal calculateMonthlyBenefit(List<OrderDetailDto> orderDetails) {
+    private BigDecimal calculateMonthlyBenefit(List<OrderDetailDTO> orderDetails) {
         BigDecimal totalBenefit = BigDecimal.ZERO;
 
-        for (OrderDetailDto orderDetail : orderDetails) {
+        for (OrderDetailDTO orderDetail : orderDetails) {
             BigDecimal price = orderDetail.getPrice();
             int quantity = orderDetail.getQuantity();
 

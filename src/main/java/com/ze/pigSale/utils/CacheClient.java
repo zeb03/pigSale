@@ -4,7 +4,6 @@ import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import com.baomidou.mybatisplus.extension.api.R;
 import com.ze.pigSale.common.RedisData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -16,7 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import static com.ze.pigSale.common.RedisConstants.*;
+import static com.ze.pigSale.constants.RedisConstants.*;
 
 
 @Slf4j

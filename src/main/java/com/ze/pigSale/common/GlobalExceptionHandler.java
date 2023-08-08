@@ -1,7 +1,6 @@
 package com.ze.pigSale.common;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.FileNotFoundException;
 import java.sql.SQLIntegrityConstraintViolationException;
 
-import static com.ze.pigSale.common.ExceptionConstants.*;
+import static com.ze.pigSale.constants.ExceptionConstants.*;
 
 /**
  * @author: zebii
