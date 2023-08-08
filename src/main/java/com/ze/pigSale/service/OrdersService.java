@@ -95,4 +95,6 @@ public interface OrdersService {
     Integer getCountByTime(LocalDateTime start, LocalDateTime end);
 
     Result<String> cancelOrders(Long ordersId, HttpServletRequest request);
+
+    void save(Orders orders);
 }

@@ -10,6 +10,8 @@ public class MqConstants {
     public static final String EXCHANGE_NAME = "product.topic";
     public static final String DELETE_KEY = "product.delete";
     public static final String INSERT_KEY = "product.insert";
+    public static final String ORDER_QUEUE_NAME = "order.queue";
+
 
 
 }

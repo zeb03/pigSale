@@ -20,9 +20,10 @@
 
     <insert id="saveBatch">
         insert into order_detail values
-        <foreach collection="list" separator="," item="item">
+        <foreach collection="orderDetails" separator="," item="item">
             (null, #{item.orderId}, #{item.productId}, #{item.quantity}, #{item.price})
         </foreach>
+
     </insert>
 
     <select id="getListByOrderId" resultType="com.ze.pigSale.entity.OrderDetail">

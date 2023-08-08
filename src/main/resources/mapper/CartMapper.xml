@@ -27,7 +27,7 @@
         values (null, #{userId}, #{productId}, #{quantity}, #{name}, #{image}, #{createTime}, #{amount})
     </insert>
 
-    <update id="updateById">
+    <update id="updateCartById">
         update cart
         set user_id=#{userId},
             product_id=#{productId},

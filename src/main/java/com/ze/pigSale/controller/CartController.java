@@ -68,9 +68,9 @@ public class CartController {
 
     @PutMapping("/edit")
     public Result<String> edit(@RequestBody Cart cart) {
-        log.info("subCart:{}", cart);
         //获取商品
         Cart userCart = cartService.getCart(cart.getProductId());
+        log.info("cart:{}", cart);
 
         //加入购物车
         if (userCart == null) {

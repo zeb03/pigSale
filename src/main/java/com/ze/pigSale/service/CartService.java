@@ -1,6 +1,10 @@
 package com.ze.pigSale.service;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.ze.pigSale.entity.Cart;
+import com.ze.pigSale.entity.Product;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
@@ -8,8 +12,7 @@ import java.util.List;
  * author: zebii
  * Date: 2023-03-31-16:39
  */
-
-public interface CartService {
+public interface CartService extends IService<Cart> {
 
     /**
      * 根据用户id，产品id获取购物车

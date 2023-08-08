@@ -1,5 +1,6 @@
 package com.ze.pigSale.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ze.pigSale.entity.Cart;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -13,7 +14,7 @@ import java.util.List;
 * @Entity com.ze.pig.entity.Cart
 */
 @Mapper
-public interface CartMapper {
+public interface CartMapper extends BaseMapper<Cart> {
 
     /**
      * 根据用户id，产品id获取购物车
@@ -39,12 +40,6 @@ public interface CartMapper {
     List<Cart> listByUserId(@Param("userId") Long userId);
 
     /**
-     * 根据id修改
-     * @param cart
-     */
-    void updateById(Cart cart);
-
-    /**
      * 保存购物车
      * @param cart
      */
@@ -67,6 +62,8 @@ public interface CartMapper {
      * @param ids
      */
     void deleteBatch(@Param("ids") List<Long> ids);
+
+    void updateCartById(Cart cart);
 }
 
 

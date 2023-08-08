@@ -1,8 +1,11 @@
 package com.ze.pigSale.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.entity.Cart;
+import com.ze.pigSale.entity.Product;
 import com.ze.pigSale.mapper.CartMapper;
+import com.ze.pigSale.mapper.ProductMapper;
 import com.ze.pigSale.service.CartService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +20,7 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class CartServiceImpl implements CartService {
+public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements CartService {
 
     @Autowired
     private CartMapper cartMapper;
@@ -28,7 +31,6 @@ public class CartServiceImpl implements CartService {
         Long userId = BaseContext.getCurrentId();
         log.info("userId:{}", userId);
         cart.setUserId(userId);
-//        cart.setUserId(7L);
         cart.setProductId(productId);
         return cartMapper.getCart(cart);
     }
@@ -45,7 +47,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void updateCartById(Cart cart) {
-        cartMapper.updateById(cart);
+        cartMapper.updateCartById(cart);
     }
 
     @Override

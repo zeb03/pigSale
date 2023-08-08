@@ -1,11 +1,15 @@
 package com.ze.pigSale.service.impl;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
+import com.ze.pigSale.common.RedisData;
 import com.ze.pigSale.common.Result;
+import com.ze.pigSale.constants.RedisConstants;
+import com.ze.pigSale.dto.OrderMQ;
 import com.ze.pigSale.enums.PermissionEnum;
 import com.ze.pigSale.utils.CommonUtil;
 import com.ze.pigSale.utils.SnowFlake;
@@ -13,9 +17,13 @@ import com.ze.pigSale.dto.OrdersDTO;
 import com.ze.pigSale.entity.*;
 import com.ze.pigSale.mapper.OrdersMapper;
 import com.ze.pigSale.service.*;
+import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,12 +31,14 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.ze.pigSale.constants.MqConstants.ORDER_QUEUE_NAME;
 import static com.ze.pigSale.constants.OrderConstants.*;
 import static com.ze.pigSale.constants.OrderConstants.ORDER_HAS_CANCEL;
-import static com.ze.pigSale.constants.RedisConstants.FEED_ORDER_KEY;
+import static com.ze.pigSale.constants.RedisConstants.*;
 import static com.ze.pigSale.enums.PermissionEnum.CANCEL_ORDER;
 
 /**
@@ -57,6 +67,17 @@ public class OrdersServiceImpl implements OrdersService {
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private OrdersService ordersService;
+    @Resource
+    private RabbitTemplate rabbitTemplate;
+
+    private static final DefaultRedisScript<Long> ORDER_SCRIPT;
+
+    static {
+        ORDER_SCRIPT = new DefaultRedisScript<>();
+        ORDER_SCRIPT.setLocation(new ClassPathResource("order.lua"));
+        ORDER_SCRIPT.setResultType(Long.class);
+    }
+
 
     @Override
     public Orders getById(Long ordersId) {
@@ -104,84 +125,77 @@ public class OrdersServiceImpl implements OrdersService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void submit(OrdersDTO ordersDto) {
-        //获取用户信息
-        Long userId = BaseContext.getCurrentId();
-        User user = userService.getUserById(userId);
-        log.info("user:{}", user);
-
-        //获取地址信息
-        Long addressId = ordersDto.getAddressId();
-        Address address = addressService.getAddressById(addressId);
-        if (address == null) {
-            throw new CustomException("地址不存在");
-        }
-
-        //获取购买商品
+        //获取购买的商品id
         List<Long> cartItemIds = ordersDto.getCartItemIds();
         if (cartItemIds == null || cartItemIds.isEmpty()) {
             throw new CustomException("请选择商品");
         }
 
+        //获取购物车商品
         List<Cart> cartList = cartService.getCartListByIds(cartItemIds);
         if (cartList == null || cartList.isEmpty()) {
             throw new CustomException("商品不存在");
         }
+        //判断库存是否充足，最好使用Lua脚本(如何使用for)，保证查询和扣减一致性
+        //创建keys，保存商品id
+        List<String> keys = new ArrayList<>(cartList.size());
+        //创建args，保存数量
+        String[] args = new String[cartList.size() + 1];
+        //设置keys长度
+        args[0] = String.valueOf(cartList.size());
+
+        for (int i = 0; i < cartList.size(); i++) {
+            Cart cart = cartList.get(i);
+
+            Long productId = cart.getProductId();
+            Integer quantity = cart.getQuantity();
+
+            keys.add(productId.toString());
+            args[i + 1] = quantity.toString();
+        }
+
+        //执行lua脚本
+        Long result = stringRedisTemplate.execute(ORDER_SCRIPT, keys, args);
+
+        if (result != 0) {
+            throw new CustomException("商品id: " + result + "库存不足，请重新选择");
+        }
+
+
+//        for (Cart cart : cartList) {
+//            String cacheStock = stringRedisTemplate.opsForValue().get(RedisConstants.PRODUCT_STOCK_KEY + cart.getProductId());
+//            if (StringUtil.isBlank(cacheStock)) {
+//                throw new CustomException("未缓存改商品库存数据");
+//            }
+//            int stock = Integer.parseInt(cacheStock);
+//            //库存不足
+//            if (stock <= cart.getQuantity()) {
+//                throw new CustomException("购物车中商品" + cart.getProductId() + "库存不足，请重新选择");
+//            }
+//        }
+//        //减少redis库存
+//        for (Cart cart : cartList) {
+//            String cacheStock = stringRedisTemplate.opsForValue().get(RedisConstants.PRODUCT_STOCK_KEY + cart.getProductId());
+//            assert cacheStock != null;
+//            int stock = Integer.parseInt(cacheStock);
+//            stringRedisTemplate.opsForValue().set(PRODUCT_STOCK_KEY + cart.getProductId(), String.valueOf(stock - cart.getQuantity()));
+//        }
 
         //设置订单id
         SnowFlake idWorker = new SnowFlake(0, 0);
         ordersDto.setId(idWorker.nextId());
 
-        //计算总金额
-        BigDecimal amount = new BigDecimal(0);
-        for (Cart cart : cartList) {
-            amount = amount.add(cart.getAmount().multiply(new BigDecimal(cart.getQuantity())));
-        }
+        //创建消息对象
+        OrderMQ orderMq = new OrderMQ();
+        orderMq.setOrderId(ordersDto.getId());
+        orderMq.setCartId(cartItemIds);
+        orderMq.setAddress(ordersDto.getAddressId());
+        orderMq.setUserId(BaseContext.getCurrentId());
 
-        //设置订单明细信息
-        List<OrderDetail> orderDetails = cartList.stream().map(item -> {
-            //获取商品，判断商品库存是否足够
-            Long productId = item.getProductId();
-            Product product = productService.getProductById(productId);
-            Integer stock = product.getStock();
-            if (stock < item.getQuantity()) {
-                throw new CustomException("提交订单失败, 商品" + product.getProductName() + "库存不足");
-            }
+        //发送订单号、商品列表、用户号到消息队列
+        rabbitTemplate.convertAndSend(ORDER_QUEUE_NAME, JSONUtil.toJsonStr(orderMq));
 
-            //减少商品库存
-            product.setStock(stock - item.getQuantity());
-            productService.updateProduct(product);
-
-            OrderDetail orderDetail = new OrderDetail();
-            orderDetail.setOrderId(ordersDto.getId());
-            orderDetail.setPrice(item.getAmount());
-            orderDetail.setQuantity(item.getQuantity());
-            orderDetail.setProductId(item.getProductId());
-            return orderDetail;
-        }).collect(Collectors.toList());
-
-        //保存订单明细
-        log.info("orderDetails:{}", orderDetails);
-        ordersDetailService.saveBatch(orderDetails);
-
-
-        //设置订单信息
-        ordersDto.setCreateTime(LocalDateTime.now());
-        ordersDto.setCheckoutTime(LocalDateTime.now());
-        ordersDto.setPayMethod(1);
-        ordersDto.setStatus(2);
-        ordersDto.setTotalPrice(new BigDecimal(String.valueOf(amount)));//总金额
-        ordersDto.setUserId(userId);
-        ordersDto.setUserName(user.getUsername());
-        ordersDto.setPhone(user.getPhone());
-        ordersDto.setAddress((address.getProvince() == null ? "" : address.getProvince())
-                + (address.getCity() == null ? "" : address.getCity())
-                + (address.getDistrict() == null ? "" : address.getDistrict())
-                + (address.getDetail() == null ? "" : address.getDetail()));
-
-        ordersMapper.save(ordersDto);
-
-        //清空购物车
-        cartService.deleteBatch(cartItemIds);
+        //返回订单号给用户
     }
 
     @Override
@@ -291,13 +305,13 @@ public class OrdersServiceImpl implements OrdersService {
 
         //增加产品库存
         List<OrderDetail> list = ordersDetailService.getListByOrderId(orders.getId());
-        list.stream().map(item->{
+        list.stream().map(item -> {
             Long productId = item.getProductId();
             Integer quantity = item.getQuantity();
             Product product = productService.getProductById(productId);
             product.setStock(product.getStock() + quantity);
             productService.updateProduct(product);
-            return item;
+            return null;
         }).collect(Collectors.toList());
     }
 
@@ -364,6 +378,20 @@ public class OrdersServiceImpl implements OrdersService {
             return Result.success("取消成功");
         }
 
+        //将消息推送至相关管理员收件箱
+        sendMsgToAdmin(ordersId);
+
+        //TODO:超时未处理则复原订单状态：https://blog.csdn.net/Anenan/article/details/126368753
+
+        return Result.success("等待管理员同意");
+    }
+
+    @Override
+    public void save(Orders orders) {
+        ordersMapper.save(orders);
+    }
+
+    private void sendMsgToAdmin(Long ordersId) {
         //查询相关管理员
         //遍历数据库表，找到有订单管理权限的管理员
         Integer permissionId = CANCEL_ORDER.getPermissionId();
@@ -376,10 +404,6 @@ public class OrdersServiceImpl implements OrdersService {
             String key = FEED_ORDER_KEY + userId;
             stringRedisTemplate.opsForZSet().add(key, ordersId.toString(), System.currentTimeMillis());
         }
-
-        //超时未处理则复原订单状态：https://blog.csdn.net/Anenan/article/details/126368753
-
-        return Result.success("等待管理员同意");
     }
 
 }

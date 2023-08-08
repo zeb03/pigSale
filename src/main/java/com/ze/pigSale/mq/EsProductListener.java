@@ -5,7 +5,6 @@ import com.ze.pigSale.entity.Product;
 import com.ze.pigSale.repository.EsProductRepository;
 import com.ze.pigSale.service.EsProductService;
 import com.ze.pigSale.service.ProductService;
-import lombok.extern.log4j.Log4j;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.Exchange;
@@ -24,7 +23,7 @@ import static com.ze.pigSale.constants.MqConstants.*;
  */
 @Component
 @Slf4j
-public class ProductListener {
+public class EsProductListener {
 
     @Autowired
     private EsProductRepository esProductRepository;

@@ -1,5 +1,7 @@
 package com.ze.pigSale.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -13,8 +15,10 @@ import java.time.LocalDateTime;
 @Data
 public class Cart implements Serializable {
 
+    @TableId
     private Long cartId;
 
+    @TableField("user_id")
     private Long userId;
 
     private Long productId;
