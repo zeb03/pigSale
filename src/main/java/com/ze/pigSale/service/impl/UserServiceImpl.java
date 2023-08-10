@@ -8,9 +8,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import com.ze.pigSale.anno.PermissionAnno;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
+import com.ze.pigSale.constants.ExceptionConstants;
 import com.ze.pigSale.dto.FeedBackDTO;
 import com.ze.pigSale.dto.UserDTO;
 import com.ze.pigSale.entity.Orders;
@@ -23,7 +25,6 @@ import com.ze.pigSale.service.OrdersService;
 import com.ze.pigSale.service.ProductService;
 import com.ze.pigSale.service.UserPermissionService;
 import com.ze.pigSale.service.UserService;
-import com.ze.pigSale.utils.CommonUtil;
 import com.ze.pigSale.utils.RegexUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -39,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.ze.pigSale.constants.RedisConstants.*;
-import static com.ze.pigSale.enums.PermissionEnum.HANDLE_FEEDBACK;
+import static com.ze.pigSale.enums.PermissionEnum.*;
 
 /**
  * author: zebii
@@ -91,13 +92,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    @PermissionAnno(value = PermissionEnum.VIEW_USER)
     public PageInfo<User> getUserPage(Integer currentPage, Integer pageSize, Integer role, String search) {
-        //判断权限
-        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.VIEW_USER);
-        if (!hasPermission) {
-            throw new CustomException(CommonUtil.NOT_PERMISSION);
-        }
-
         PageMethod.startPage(currentPage, pageSize);
         List<User> userList = null;
         if (role == 0) {
@@ -109,16 +105,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    @PermissionAnno(value = EDIT_USER)
     public void updateUser(User user) {
-        //判断权限
-        Long userId = BaseContext.getCurrentId();
-        if (!Objects.equals(user.getUserId(), userId)) {
-            boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.EDIT_USER);
-            if (!hasPermission) {
-                throw new CustomException(CommonUtil.NOT_PERMISSION);
-            }
-        }
-
         if (user.getPassword() == null || "".equals(user.getPassword())) {
             userMapper.updateUser(user);
         } else {
@@ -236,7 +224,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         //方案一：返回一个map
         //方案二：写多个接口，多次返回
-        HashMap<String, List> map = new HashMap<>();
+        HashMap<String, List> map = new HashMap<>(3);
         map.put("shop", productList);
         map.put("order", orderList);
         map.put("feedback", feedBackList);
@@ -248,45 +236,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //判断登录方式
         if (code != null && !code.isEmpty()) {
             //验证码登录
-            // 1.校验手机号
-            String phone = user.getPhone();
-            if (RegexUtils.isPhoneInvalid(phone)) {
-                // 2.如果不符合，返回错误信息
-                return Result.error("手机号格式错误！");
-            }
-            String cacheCode = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY + phone);
-            if (cacheCode == null || !cacheCode.equals(code)) {
-                // 不一致，报错
-                return Result.error("验证码错误");
-            }
-            //根据手机号查询
-            LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(User::getPhone, phone);
-            User one = this.getOne(wrapper);
-            if (one == null) {
-                //自动注册用户
-                String username = DEFAULT_USERNAME + RandomUtil.randomString(6);
-                user.setUsername(username);
-                this.register(user);
-            } else if (one.getStatus().equals(USER_NOT_EXISTS)) {
-                return Result.error("该用户不存在");
-            } else if (one.getStatus().equals(USER_DISABLED)) {
-                return Result.error("该用户已被禁用");
-            }
-
-            //保存到redis
-            String token = UUID.randomUUID().toString();
-            UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
-            Map<String, Object> map = BeanUtil.beanToMap(userDTO, new HashMap<>(), CopyOptions.create().setIgnoreNullValue(true).setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));
-            stringRedisTemplate.opsForHash().putAll(LOGIN_USER_KEY + token, map);
-            //设置token有效期
-            stringRedisTemplate.expire(LOGIN_USER_KEY + token, LOGIN_USER_TTL, TimeUnit.MINUTES);
-
-            //返回token
-            return Result.success(token);
+            return loginByPhone(user, code);
         }
 
         //用户名+密码登录
+        return loginByPasswd(user, request);
+    }
+
+    private Result<?> loginByPasswd(User user, HttpServletRequest request) {
         //将页面提交的密码password进行md5加密处理
         String password = user.getPassword();
         password = DigestUtils.md5DigestAsHex(password.getBytes());
@@ -312,6 +269,45 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         request.getSession().getServletContext().setAttribute("user", userResult.getUserId());
         return Result.success(userResult);
+    }
+
+    private Result<?> loginByPhone(User user, String code) {
+        // 1.校验手机号
+        String phone = user.getPhone();
+        if (RegexUtils.isPhoneInvalid(phone)) {
+            // 2.如果不符合，返回错误信息
+            return Result.error("手机号格式错误！");
+        }
+        String cacheCode = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY + phone);
+        if (cacheCode == null || !cacheCode.equals(code)) {
+            // 不一致，报错
+            return Result.error("验证码错误");
+        }
+        //根据手机号查询
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getPhone, phone);
+        User one = this.getOne(wrapper);
+        if (one == null) {
+            //自动注册用户
+            String username = DEFAULT_USERNAME + RandomUtil.randomString(6);
+            user.setUsername(username);
+            this.register(user);
+        } else if (one.getStatus().equals(USER_NOT_EXISTS)) {
+            return Result.error("该用户不存在");
+        } else if (one.getStatus().equals(USER_DISABLED)) {
+            return Result.error("该用户已被禁用");
+        }
+
+        //保存到redis
+        String token = UUID.randomUUID().toString();
+        UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
+        Map<String, Object> map = BeanUtil.beanToMap(userDTO, new HashMap<>(), CopyOptions.create().setIgnoreNullValue(true).setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));
+        stringRedisTemplate.opsForHash().putAll(LOGIN_USER_KEY + token, map);
+        //设置token有效期
+        stringRedisTemplate.expire(LOGIN_USER_KEY + token, LOGIN_USER_TTL, TimeUnit.MINUTES);
+
+        //返回token
+        return Result.success(token);
     }
 
 }

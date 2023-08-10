@@ -36,7 +36,7 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void insertBatch(List<Address> addressList, Long userId) {
         for (Address address : addressList) {
             address.setUserId(userId);
@@ -46,7 +46,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public void updateAddress(Address address) {
-        if (address.getIsDefault() == 1){
+        if (address.getIsDefault() == 1) {
             addressMapper.updateIsDefault(address);
         }
         addressMapper.updateAddress(address);

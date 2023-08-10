@@ -1,5 +1,7 @@
 package com.ze.pigSale.service;
 
+
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.pagehelper.PageInfo;
 import com.ze.pigSale.common.Result;
 import com.ze.pigSale.dto.OrdersDTO;
@@ -12,7 +14,7 @@ import java.time.LocalDateTime;
  * author: zebii
  * Date: 2023-04-04-20:29
  */
-public interface OrdersService {
+public interface OrdersService extends IService<Orders> {
 
     /**
      * 根据id获取订单
@@ -70,7 +72,7 @@ public interface OrdersService {
      *
      * @param orders
      */
-    void updateById(Orders orders);
+    void updateOrdersById(Orders orders);
 
     /**
      * 同意退款
@@ -96,5 +98,4 @@ public interface OrdersService {
 
     Result<String> cancelOrders(Long ordersId, HttpServletRequest request);
 
-    void save(Orders orders);
 }

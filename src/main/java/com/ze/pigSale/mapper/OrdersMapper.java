@@ -1,6 +1,7 @@
 package com.ze.pigSale.mapper;
 
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ze.pigSale.entity.Orders;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -15,7 +16,7 @@ import java.util.List;
  * @Entity com.ze.pigSale.entity.Orders
  */
 @Mapper
-public interface OrdersMapper {
+public interface OrdersMapper extends BaseMapper<Orders> {
 
     /**
      * 查询范围时间内的所有订单号
@@ -51,7 +52,7 @@ public interface OrdersMapper {
      * 修改订单
      * @param orders
      */
-    void updateById(Orders orders);
+    void updateOrdersById(Orders orders);
 
     /**
      * 获取已经送达但是没有评价的订单

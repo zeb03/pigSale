@@ -50,7 +50,7 @@ public class EsProductListener {
             exchange = @Exchange(name = EXCHANGE_NAME, type = ExchangeTypes.TOPIC),
             key = DELETE_KEY
     ))
-    public void listenHotelDelete(Long productId) {
+    public void listenProductDelete(Long productId) {
         // 删除
         esProductRepository.deleteById(productId);
     }

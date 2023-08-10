@@ -27,7 +27,7 @@
                 #{remark}, #{phone}, #{address}, #{userName});
     </insert>
 
-    <update id="updateById">
+    <update id="updateOrdersById">
         update orders
         set address_id  = #{addressId},
             total_price = #{totalPrice},

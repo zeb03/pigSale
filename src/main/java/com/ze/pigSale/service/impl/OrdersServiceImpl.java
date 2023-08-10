@@ -2,22 +2,21 @@ package com.ze.pigSale.service.impl;
 
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import com.ze.pigSale.anno.PermissionAnno;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
-import com.ze.pigSale.common.RedisData;
 import com.ze.pigSale.common.Result;
-import com.ze.pigSale.constants.RedisConstants;
+import com.ze.pigSale.constants.ExceptionConstants;
 import com.ze.pigSale.dto.OrderMQ;
 import com.ze.pigSale.enums.PermissionEnum;
-import com.ze.pigSale.utils.CommonUtil;
 import com.ze.pigSale.utils.SnowFlake;
 import com.ze.pigSale.dto.OrdersDTO;
 import com.ze.pigSale.entity.*;
 import com.ze.pigSale.mapper.OrdersMapper;
 import com.ze.pigSale.service.*;
-import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
@@ -29,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,14 +45,10 @@ import static com.ze.pigSale.enums.PermissionEnum.CANCEL_ORDER;
  */
 @Service
 @Slf4j
-public class OrdersServiceImpl implements OrdersService {
+public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> implements OrdersService {
 
     @Resource
     private OrdersMapper ordersMapper;
-    @Resource
-    private UserService userService;
-    @Resource
-    private AddressService addressService;
     @Resource
     private CartService cartService;
     @Resource
@@ -85,12 +79,8 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
+    @PermissionAnno(value = PermissionEnum.VIEW_ORDER)
     public PageInfo<OrdersDTO> getPageWithDetail(int currentPage, int pageSize, Long ordersId, LocalDateTime beginTime, LocalDateTime endTime) {
-        //判断权限
-        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.VIEW_ORDER);
-        if (!hasPermission) {
-            throw new CustomException(CommonUtil.NOT_PERMISSION);
-        }
 
         //开启分页
         PageMethod.startPage(currentPage, pageSize);
@@ -228,12 +218,8 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
+    @PermissionAnno(value = PermissionEnum.EDIT_ORDER)
     public void updateStatus(Orders orders) {
-        //判断权限
-        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.EDIT_ORDER);
-        if (!hasPermission) {
-            throw new CustomException(CommonUtil.NOT_PERMISSION);
-        }
 
         //根据id获取此订单
         Orders oneOrders = ordersMapper.getById(orders.getId());
@@ -282,18 +268,14 @@ public class OrdersServiceImpl implements OrdersService {
 
 
     @Override
-    public void updateById(Orders orders) {
+    public void updateOrdersById(Orders orders) {
         ordersMapper.updateById(orders);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
+    @PermissionAnno(value = CANCEL_ORDER)
     public void agree(Orders orders) {
-        //判断权限
-        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.CANCEL_ORDER);
-        if (!hasPermission) {
-            throw new CustomException(CommonUtil.NOT_PERMISSION);
-        }
 
         Orders oneOrders = this.getById(orders.getId());
         if (oneOrders == null) {
@@ -316,12 +298,8 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
+    @PermissionAnno(value = CANCEL_ORDER)
     public void disagree(Orders orders, HttpServletRequest request) {
-        //判断权限
-        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.CANCEL_ORDER);
-        if (!hasPermission) {
-            throw new CustomException(CommonUtil.NOT_PERMISSION);
-        }
 
         //获取订单
         Orders oneOrders = this.getById(orders.getId());
@@ -368,6 +346,7 @@ public class OrdersServiceImpl implements OrdersService {
             //设置订单状态
             oneOrders.setStatus(ORDER_HAS_CANCEL);
         } else {
+            //TODO:此处可以缓存
             request.getSession().setAttribute("userStatus", oneOrders.getStatus());
             oneOrders.setStatus(ORDER_APPLY_CANCEL);
         }
@@ -386,11 +365,11 @@ public class OrdersServiceImpl implements OrdersService {
         return Result.success("等待管理员同意");
     }
 
-    @Override
-    public void save(Orders orders) {
-        ordersMapper.save(orders);
-    }
-
+    /**
+     * 推送消息
+     *
+     * @param ordersId
+     */
     private void sendMsgToAdmin(Long ordersId) {
         //查询相关管理员
         //遍历数据库表，找到有订单管理权限的管理员

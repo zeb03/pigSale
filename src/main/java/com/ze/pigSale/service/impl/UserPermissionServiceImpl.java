@@ -1,8 +1,10 @@
 package com.ze.pigSale.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
+import com.ze.pigSale.constants.ExceptionConstants;
 import com.ze.pigSale.entity.Permissions;
 import com.ze.pigSale.entity.User;
 import com.ze.pigSale.entity.UserPermissions;
@@ -42,25 +44,18 @@ public class UserPermissionServiceImpl extends ServiceImpl<UserPermissionsMapper
     @Override
     public boolean hasPermission(PermissionEnum permissionEnum) {
         Long userId = BaseContext.getCurrentId();
-        User user = userService.getUserById(userId);
-        List<UserPermissions> permissions = this.getByUserId(user.getUserId());
-        boolean hasPermission = false;
-        for (UserPermissions permission : permissions) {
-            if (permissionEnum == permission.getPermissionId()) {
-                hasPermission = true;
-                break;
-            }
-        }
-
-        return hasPermission;
+        LambdaQueryWrapper<UserPermissions> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserPermissions::getUserId, userId);
+        wrapper.eq(UserPermissions::getPermissionId, permissionEnum);
+        UserPermissions one = this.getOne(wrapper);
+        return one != null;
     }
 
     @Override
     public void addPermission(UserPermissions userPermissions) {
         Long userId = BaseContext.getCurrentId();
-        User user = userService.getUserById(userId);
-        if (user.getUserId() != 1) {
-            throw new CustomException("无权限");
+        if (userId != 1) {
+            throw new CustomException(ExceptionConstants.NOT_PERMISSION);
         }
 
         userPermissions.setCreatedTime(LocalDateTime.now());
@@ -78,7 +73,7 @@ public class UserPermissionServiceImpl extends ServiceImpl<UserPermissionsMapper
     public void deletePermissionById(Long id) {
         User user = userService.getUserById(BaseContext.getCurrentId());
         if (user.getUserId() != 1) {
-            throw new CustomException("无权限");
+            throw new CustomException(ExceptionConstants.NOT_PERMISSION);
         }
         userPermissionsMapper.deleteById(id);
     }

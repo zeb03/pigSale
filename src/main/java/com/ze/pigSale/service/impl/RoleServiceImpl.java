@@ -32,7 +32,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleVo> getRolesWithPermissions(List<Role> roles) {
-        List<RoleVo> roleVos = roles.stream().map(item -> {
+        return roles.stream().map(item -> {
             Integer roleId = item.getRoleId();
             List<Permissions> list = permissionService.getByRoleId(roleId);
             RoleVo roleVo = new RoleVo();
@@ -40,6 +40,5 @@ public class RoleServiceImpl implements RoleService {
             roleVo.setRolePermissions(list);
             return roleVo;
         }).collect(Collectors.toList());
-        return roleVos;
     }
 }

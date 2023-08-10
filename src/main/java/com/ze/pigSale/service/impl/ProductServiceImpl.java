@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import com.ze.pigSale.anno.PermissionAnno;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
+import com.ze.pigSale.constants.ExceptionConstants;
 import com.ze.pigSale.dto.OrderDetailDTO;
 import com.ze.pigSale.entity.*;
 import com.ze.pigSale.enums.PermissionEnum;
@@ -15,7 +17,6 @@ import com.ze.pigSale.mapper.OrderDetailMapper;
 import com.ze.pigSale.mapper.ProductMapper;
 import com.ze.pigSale.service.*;
 import com.ze.pigSale.utils.CacheClient;
-import com.ze.pigSale.utils.CommonUtil;
 import com.ze.pigSale.vo.ProductVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 
 import static com.ze.pigSale.constants.MqConstants.*;
 import static com.ze.pigSale.constants.RedisConstants.*;
+import static com.ze.pigSale.enums.PermissionEnum.*;
 
 /**
  * author: zebii
@@ -95,12 +97,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
+    @PermissionAnno(value = ADD_PRODUCT)
     public void insertProduct(Product product) {
-        //判断权限
-        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.ADD_PRODUCT);
-        if (!hasPermission) {
-            throw new CustomException(CommonUtil.NOT_PERMISSION);
-        }
 
         //设置时间
         product.setCreateTime(LocalDateTime.now());
@@ -115,12 +113,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @PermissionAnno(value = EDIT_PRODUCT)
     public void updateProduct(Product product) {
-        //判断权限
-        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.EDIT_PRODUCT);
-        if (!hasPermission) {
-            throw new CustomException(CommonUtil.NOT_PERMISSION);
-        }
 
         product.setUpdateTime(LocalDateTime.now());
         productMapper.updateProduct(product);
@@ -164,12 +158,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
+    @PermissionAnno(value = DELETE_PRODUCT)
     public void deleteProduct(Long productId) {
-        //判断权限
-        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.DELETE_PRODUCT);
-        if (!hasPermission) {
-            throw new CustomException(CommonUtil.NOT_PERMISSION);
-        }
         productMapper.deleteProduct(productId);
         //删除redis缓存
         stringRedisTemplate.delete(CACHE_SHOP_KEY + productId);
@@ -178,12 +168,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
+    @PermissionAnno(value = VIEW_DATA)
     public Map<String, Integer> getSalesRank(Integer month) {
-        //判断权限
-//        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.VIEW_DATA);
-//        if (!hasPermission) {
-//            throw new CustomException(CommonUtil.NOT_PERMISSION);
-//        }
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime time = now.minusMonths(month);
@@ -218,14 +204,12 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
+    @PermissionAnno(value = VIEW_DATA)
     public Map<String, BigDecimal> getAllBenefit(Integer month) {
 
-        //判断权限
-//        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.VIEW_DATA);
-//        if (!hasPermission) {
-//            throw new CustomException(CommonUtil.NOT_PERMISSION);
-//        }
-
+        if (month == null) {
+            throw new CustomException("参数为空");
+        }
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime time = now.minusMonths(month);
 
@@ -256,12 +240,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
+    @PermissionAnno(value = VIEW_DATA)
     public List<BigDecimal> getBenefit() {
-        //判断权限
-        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.VIEW_DATA);
-        if (!hasPermission) {
-            throw new CustomException(CommonUtil.NOT_PERMISSION);
-        }
 
         // 获取当前年份
         int currentYear = YearMonth.now().getYear();
@@ -289,12 +269,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
+    @PermissionAnno(value = VIEW_DATA)
     public List<Integer> getOrderCount() {
-        //判断权限
-        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.VIEW_DATA);
-        if (!hasPermission) {
-            throw new CustomException(CommonUtil.NOT_PERMISSION);
-        }
 
         // 获取当前年份
         int currentYear = YearMonth.now().getYear();
@@ -478,7 +454,12 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
 
-    // 根据订单详情计算月收益
+    /**
+     * 根据订单详情计算月收益
+     *
+     * @param orderDetails
+     * @return
+     */
     private BigDecimal calculateMonthlyBenefit(List<OrderDetailDTO> orderDetails) {
         BigDecimal totalBenefit = BigDecimal.ZERO;
 
