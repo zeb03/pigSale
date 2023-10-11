@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ze.pigSale.mq;
 
 import cn.hutool.json.JSONUtil;
@@ -44,13 +61,13 @@ public class OrderListener {
         Long userId = orderMq.getUserId();
         Long addressId = orderMq.getAddress();
 
-        //获取购物车项
+        // 获取购物车项
         List<Long> list = orderMq.getCartId();
         List<Cart> cartList = cartService.getCartListByIds(list);
 
-        //减少库存，设置订单明细
+        // 减少库存，设置订单明细
         List<OrderDetail> orderDetails = cartList.stream().map(item -> {
-            //获取商品
+            // 获取商品
             Long productId = item.getProductId();
             Product product = productService.getProductById(productId);
 
@@ -58,40 +75,40 @@ public class OrderListener {
                 throw new CustomException("商品为空");
             }
 
-            //获取购买数量
+            // 获取购买数量
             Integer quantity = item.getQuantity();
             Integer stock = product.getStock();
-            //设置库存
+            // 设置库存
             product.setStock(stock - quantity);
-            //使用乐观锁减少库存
+            // 使用乐观锁减少库存
             LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(Product::getProductId, item.getProductId()).gt(Product::getStock, quantity);
             boolean successFlag = productService.saveOrUpdate(product, wrapper);
 
-            //库存超卖
+            // 库存超卖
             if (!successFlag) {
                 throw new CustomException("商品库存不足");
             }
 
-            //设置订单明细信息
+            // 设置订单明细信息
             return getOrderDetail(orderId, item);
         }).collect(Collectors.toList());
 
-        //保存订单明细
+        // 保存订单明细
         ordersDetailService.saveBatch(orderDetails);
 
-        //获取订单对象
-        //计算总金额
+        // 获取订单对象
+        // 计算总金额
         BigDecimal amount = new BigDecimal(0);
         for (Cart cart : cartList) {
             amount = amount.add(cart.getAmount().multiply(new BigDecimal(cart.getQuantity())));
         }
         Orders orders = setOrdersInfo(userId, addressId, amount);
 
-        //保存订单
+        // 保存订单
         ordersService.save(orders);
 
-        //清空购物车
+        // 清空购物车
         cartService.deleteBatch(list);
     }
 
@@ -105,29 +122,29 @@ public class OrderListener {
     }
 
     private Orders setOrdersInfo(Long userId, Long addressId, BigDecimal amount) {
-        //获取用户信息
+        // 获取用户信息
         User user = userService.getUserById(userId);
-        //获取地址信息
+        // 获取地址信息
         Address address = addressService.getAddressById(addressId);
-        //创建订单对象
+        // 创建订单对象
         Orders order = new Orders();
 
-        //设置时间
+        // 设置时间
         order.setCreateTime(LocalDateTime.now());
         order.setCheckoutTime(LocalDateTime.now());
-        //设置支付方式
+        // 设置支付方式
         order.setPayMethod(1);
-        //设置订单状态
+        // 设置订单状态
         order.setStatus(2);
-        //设置总金额
+        // 设置总金额
         order.setTotalPrice(new BigDecimal(String.valueOf(amount)));
-        //设置用户id
+        // 设置用户id
         order.setUserId(userId);
-        //设置用户名
+        // 设置用户名
         order.setUserName(user.getUsername());
-        //设置手机号码
+        // 设置手机号码
         order.setPhone(user.getPhone());
-        //设置地址
+        // 设置地址
         order.setAddressId(addressId);
         order.setAddress(
                 (address.getProvince() == null ? "" : address.getProvince())

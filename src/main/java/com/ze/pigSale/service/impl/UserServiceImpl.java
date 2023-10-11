@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ze.pigSale.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -75,10 +92,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return userMapper.getUserByName(username);
     }
 
-
     @Override
     public void register(User user) {
-        //设置初始状态
+        // 设置初始状态
         user.setRole(0);
         user.setStatus(1);
         user.setImage("avatar.webp");
@@ -122,11 +138,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new CustomException("用户id错误");
         }
 
-        //修改用户状态
+        // 修改用户状态
         oneUser.setStatus(3);
         userService.updateUser(oneUser);
 
-        //清除数据
+        // 清除数据
         request.getSession().removeAttribute("user");
         BaseContext.removeThreadLocal();
     }
@@ -174,39 +190,38 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Result messageBox() {
-        //获取当前用户
+        // 获取当前用户
         Long userId = BaseContext.getCurrentId();
-        //根据用户id，查找redis缓存
+        // 根据用户id，查找redis缓存
         String key = "feed:*" + userId;
         log.info("key: " + key);
-        //使用通配符匹配，获取用户收件箱
+        // 使用通配符匹配，获取用户收件箱
         Set<String> keys = stringRedisTemplate.keys(key);
-        //为空则直接返回
+        // 为空则直接返回
         if (keys == null || keys.isEmpty()) {
             return Result.success(Collections.emptyList());
         }
-        //创建list
+        // 创建list
         List<Product> productList = new ArrayList<>();
         List<Orders> orderList = new ArrayList<>();
         List<FeedBackDTO> feedBackList = new ArrayList<>();
-        //遍历所有消息
+        // 遍历所有消息
         for (String cacheKey : keys) {
             Set<ZSetOperations.TypedTuple<String>> typedTuples =
-                    stringRedisTemplate.opsForZSet().
-                            reverseRangeByScoreWithScores(cacheKey, 0, System.currentTimeMillis());
+                    stringRedisTemplate.opsForZSet().reverseRangeByScoreWithScores(cacheKey, 0, System.currentTimeMillis());
             if (typedTuples == null) {
                 continue;
             }
             log.info("cache key:" + cacheKey);
-            //将收件箱进行分类
+            // 将收件箱进行分类
             if (cacheKey.contains(FEED_SHOP_KEY)) {
-                //收藏商品变更消息
+                // 收藏商品变更消息
                 productList = typedTuples.stream().map(item -> {
                     Long productId = Long.valueOf(Objects.requireNonNull(item.getValue()));
                     return productService.getProductById(productId);
                 }).collect(Collectors.toList());
             } else if (cacheKey.contains(FEED_ORDER_KEY)) {
-                //订单申请消息
+                // 订单申请消息
                 orderList = typedTuples.stream().map(item -> {
                     Long orderId = Long.valueOf(Objects.requireNonNull(item.getValue()));
                     log.info("order:" + orderId);
@@ -215,15 +230,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                     return orders;
                 }).collect(Collectors.toList());
             } else {
-                //用户反馈消息
+                // 用户反馈消息
                 feedBackList = typedTuples.stream().map(item -> {
                     String value = item.getValue();
                     return JSONUtil.toBean(value, FeedBackDTO.class);
                 }).collect(Collectors.toList());
             }
         }
-        //方案一：返回一个map
-        //方案二：写多个接口，多次返回
+        // 方案一：返回一个map
+        // 方案二：写多个接口，多次返回
         HashMap<String, List> map = new HashMap<>(3);
         map.put("shop", productList);
         map.put("order", orderList);
@@ -233,25 +248,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Result login(User user, String code, HttpServletRequest request) {
-        //判断登录方式
+        // 判断登录方式
         if (code != null && !code.isEmpty()) {
-            //验证码登录
+            // 验证码登录
             return loginByPhone(user, code);
         }
 
-        //用户名+密码登录
+        // 用户名+密码登录
         return loginByPasswd(user, request);
     }
 
     private Result<?> loginByPasswd(User user, HttpServletRequest request) {
-        //将页面提交的密码password进行md5加密处理
+        // 将页面提交的密码password进行md5加密处理
         String password = user.getPassword();
         password = DigestUtils.md5DigestAsHex(password.getBytes());
 
-        //根据页面提交的用户名username查询数据库
+        // 根据页面提交的用户名username查询数据库
         User userResult = userService.getUserByName(user.getUsername());
 
-        //如果没有查询到则返回登录失败结果
+        // 如果没有查询到则返回登录失败结果
         if (userResult == null) {
             return Result.error("用户名错误");
         }
@@ -262,7 +277,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return Result.error("该用户已被禁用");
         }
 
-        //密码比对，如果不一致则返回登录失败结果
+        // 密码比对，如果不一致则返回登录失败结果
         if (!userResult.getPassword().equals(password)) {
             return Result.error("密码错误");
         }
@@ -283,12 +298,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             // 不一致，报错
             return Result.error("验证码错误");
         }
-        //根据手机号查询
+        // 根据手机号查询
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getPhone, phone);
         User one = this.getOne(wrapper);
         if (one == null) {
-            //自动注册用户
+            // 自动注册用户
             String username = DEFAULT_USERNAME + RandomUtil.randomString(6);
             user.setUsername(username);
             this.register(user);
@@ -298,15 +313,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return Result.error("该用户已被禁用");
         }
 
-        //保存到redis
+        // 保存到redis
         String token = UUID.randomUUID().toString();
         UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
         Map<String, Object> map = BeanUtil.beanToMap(userDTO, new HashMap<>(), CopyOptions.create().setIgnoreNullValue(true).setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));
         stringRedisTemplate.opsForHash().putAll(LOGIN_USER_KEY + token, map);
-        //设置token有效期
+        // 设置token有效期
         stringRedisTemplate.expire(LOGIN_USER_KEY + token, LOGIN_USER_TTL, TimeUnit.MINUTES);
 
-        //返回token
+        // 返回token
         return Result.success(token);
     }
 

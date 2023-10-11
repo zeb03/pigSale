@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ze.pigSale.aspect;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -40,22 +57,22 @@ public class PermissionAspect {
     @Around("anoPoint()")
     public Object around(ProceedingJoinPoint point) throws Throwable {
 
-        //签名
+        // 签名
         Signature signature = point.getSignature();
-        //转方法签名
+        // 转方法签名
         MethodSignature methodSignature = (MethodSignature) signature;
-        //得到方法
+        // 得到方法
         Method method = methodSignature.getMethod();
 
         Object proceed = point.proceed();
 
-        //获取对应的注解
+        // 获取对应的注解
         PermissionAnno annotation = method.getAnnotation(PermissionAnno.class);
         if (annotation == null) {
             throw new CustomException(ExceptionConstants.NOT_PERMISSION);
         }
 
-        //如果有这个注解 拿这个注解的值
+        // 如果有这个注解 拿这个注解的值
         PermissionEnum permissionEnum = annotation.value();
 
         if (permissionEnum == PermissionEnum.EDIT_USER) {

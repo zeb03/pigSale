@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ze.pigSale.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -80,7 +97,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     @Resource
     private UserProductService userProductService;
 
-
     @Override
     public Product getProductById(Long id) {
         return productMapper.getProductById(id);
@@ -100,14 +116,14 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     @PermissionAnno(value = ADD_PRODUCT)
     public void insertProduct(Product product) {
 
-        //设置时间
+        // 设置时间
         product.setCreateTime(LocalDateTime.now());
         product.setUpdateTime(LocalDateTime.now());
 
-        //添加
+        // 添加
         productMapper.insertProduct(product);
 
-        //将消息发布到队列，同步到es
+        // 将消息发布到队列，同步到es
         rabbitTemplate.convertAndSend(EXCHANGE_NAME, INSERT_KEY, product.getProductId());
     }
 
@@ -119,13 +135,13 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         product.setUpdateTime(LocalDateTime.now());
         productMapper.updateProduct(product);
 
-        //删除redis缓存
+        // 删除redis缓存
         stringRedisTemplate.delete(CACHE_SHOP_KEY + product.getProductId());
 
-        //消息推送
+        // 消息推送
         this.sendMessage(product.getProductId());
 
-        //若购物车存在该商品，则也要进行修改
+        // 若购物车存在该商品，则也要进行修改
         Cart cart = cartService.getCart(product.getProductId());
         if (cart != null) {
             String productName = product.getProductName();
@@ -136,21 +152,21 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             cart.setImage(image);
             cartService.updateCartById(cart);
         }
-        //将消息发布到队列，同步到es
+        // 将消息发布到队列，同步到es
         rabbitTemplate.convertAndSend(EXCHANGE_NAME, INSERT_KEY, product.getProductId());
     }
 
     private void sendMessage(Long productId) {
         log.info("productId" + productId);
-        //查看所有收藏商品的用户
+        // 查看所有收藏商品的用户
         LambdaQueryWrapper<UserProduct> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserProduct::getProductId, productId);
         List<UserProduct> list = userProductService.list(wrapper);
         log.info("list" + list);
-        //获取用户id
+        // 获取用户id
         List<Long> userList = list.stream().map(UserProduct::getUserId).collect(Collectors.toList());
 
-        //将消息发送到对应用户的收件箱，以用户标识为key，以产品id为value，以时间戳为score
+        // 将消息发送到对应用户的收件箱，以用户标识为key，以产品id为value，以时间戳为score
         for (Long userId : userList) {
             String key = FEED_SHOP_KEY + userId;
             stringRedisTemplate.opsForZSet().add(key, productId.toString(), System.currentTimeMillis());
@@ -161,9 +177,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     @PermissionAnno(value = DELETE_PRODUCT)
     public void deleteProduct(Long productId) {
         productMapper.deleteProduct(productId);
-        //删除redis缓存
+        // 删除redis缓存
         stringRedisTemplate.delete(CACHE_SHOP_KEY + productId);
-        //将消息发布到队列，同步到es
+        // 将消息发布到队列，同步到es
         rabbitTemplate.convertAndSend(EXCHANGE_NAME, DELETE_KEY, productId);
     }
 
@@ -299,47 +315,47 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         ProductVo productVo = cacheClient.queryVoWithLogicalExpire(CACHE_SHOP_KEY, productId, Product.class, productMapper::getProductById,
                 ProductVo.class, this::setProductVo, CACHE_SHOP_TTL, TimeUnit.MINUTES);
         return Result.success(productVo);
-        //解决缓存穿透
-//        //从redis获取json字符串
-//        String jsonStr = stringRedisTemplate.opsForValue().get(CACHE_SHOP_KEY + productId);
-//        //如果存在则返回
-//        if (StringUtil.isNotBlank(jsonStr)) {
-//            Product product = JSONUtil.toBean(jsonStr, Product.class);
-//            return Result.success(product);
-//        }
-//        //如果不存在，则查看是否为空
-//        if (jsonStr != null) {
-//            return Result.success(null);
-//        }
-//        //从数据库查找
-//        Product product = productMapper.getProductById(productId);
-//        if (product == null) {
-//            stringRedisTemplate.opsForValue().set(CACHE_SHOP_KEY + productId, "", CACHE_SHOP_TTL, TimeUnit.MINUTES);
-//            return Result.success(null);
-//        }
-//        ProductVo productVo = BeanUtil.copyProperties(product, ProductVo.class);
-//        Category category = categoryService.getCategoryById(productVo.getCategoryId());
-//        if (category != null) {
-//            productVo.setCategoryName(category.getCategoryName());
-//        }
-//
-//        //获取商品评分
-//        List<Review> reviews = reviewService.getListByProduct(productId);
-//        if (reviews == null || reviews.isEmpty()) {
-//            productVo.setRating(0.0);
-//        } else {
-//            BigDecimal total = new BigDecimal(0);
-//            for (Review review : reviews) {
-//                total = total.add(review.getRating());
-//            }
-//            double totalRating = total.doubleValue();
-//            double rating = totalRating / reviews.size();
-//            String format = new DecimalFormat("#.0").format(rating);
-//            productVo.setRating(Double.parseDouble(format));
-//        }
-//
-//        //保存到redis
-//        stringRedisTemplate.opsForValue().set(CACHE_SHOP_KEY + productId, JSONUtil.toJsonStr(productVo), CACHE_SHOP_TTL, TimeUnit.MINUTES);
+        // 解决缓存穿透
+        // //从redis获取json字符串
+        // String jsonStr = stringRedisTemplate.opsForValue().get(CACHE_SHOP_KEY + productId);
+        // //如果存在则返回
+        // if (StringUtil.isNotBlank(jsonStr)) {
+        // Product product = JSONUtil.toBean(jsonStr, Product.class);
+        // return Result.success(product);
+        // }
+        // //如果不存在，则查看是否为空
+        // if (jsonStr != null) {
+        // return Result.success(null);
+        // }
+        // //从数据库查找
+        // Product product = productMapper.getProductById(productId);
+        // if (product == null) {
+        // stringRedisTemplate.opsForValue().set(CACHE_SHOP_KEY + productId, "", CACHE_SHOP_TTL, TimeUnit.MINUTES);
+        // return Result.success(null);
+        // }
+        // ProductVo productVo = BeanUtil.copyProperties(product, ProductVo.class);
+        // Category category = categoryService.getCategoryById(productVo.getCategoryId());
+        // if (category != null) {
+        // productVo.setCategoryName(category.getCategoryName());
+        // }
+        //
+        // //获取商品评分
+        // List<Review> reviews = reviewService.getListByProduct(productId);
+        // if (reviews == null || reviews.isEmpty()) {
+        // productVo.setRating(0.0);
+        // } else {
+        // BigDecimal total = new BigDecimal(0);
+        // for (Review review : reviews) {
+        // total = total.add(review.getRating());
+        // }
+        // double totalRating = total.doubleValue();
+        // double rating = totalRating / reviews.size();
+        // String format = new DecimalFormat("#.0").format(rating);
+        // productVo.setRating(Double.parseDouble(format));
+        // }
+        //
+        // //保存到redis
+        // stringRedisTemplate.opsForValue().set(CACHE_SHOP_KEY + productId, JSONUtil.toJsonStr(productVo), CACHE_SHOP_TTL, TimeUnit.MINUTES);
     }
 
     @Override
@@ -347,19 +363,19 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         Long userId = BaseContext.getCurrentId();
         log.info("user:" + userId);
         String key = COLLECT_USER_KEY + userId;
-        //查询zset集合
+        // 查询zset集合
         Double score = stringRedisTemplate.opsForZSet().score(key, productId.toString());
         if (score == null) {
-            //加入收藏集合
+            // 加入收藏集合
             UserProduct userProduct = new UserProduct();
             userProduct.setUserId(userId);
             userProduct.setProductId(productId);
             userProductService.saveOrUpdate(userProduct);
-            //以用户标识为key，以商品id为value，以时间戳为score存入zset
+            // 以用户标识为key，以商品id为value，以时间戳为score存入zset
             stringRedisTemplate.opsForZSet().add(key, String.valueOf(productId), System.currentTimeMillis());
             return Result.success("收藏成功");
         }
-        //已收藏过，取消收藏
+        // 已收藏过，取消收藏
         LambdaQueryWrapper<UserProduct> wrapper = new LambdaQueryWrapper<>();
         wrapper.ge(UserProduct::getUserId, userId).ge(UserProduct::getProductId, productId);
         userProductService.remove(wrapper);
@@ -369,15 +385,15 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 
     @Override
     public Result getCollections() {
-        //获取用户id
+        // 获取用户id
         Long userId = BaseContext.getCurrentId();
         String key = COLLECT_USER_KEY + userId;
-        //查询用户zset收藏集合
+        // 查询用户zset收藏集合
         Set<ZSetOperations.TypedTuple<String>> typedTuples = stringRedisTemplate.opsForZSet().reverseRangeByScoreWithScores(key, 0, System.currentTimeMillis());
         if (typedTuples == null) {
             return Result.success(Collections.emptyList());
         }
-        //根据id查询商品
+        // 根据id查询商品
         List<Product> list =
                 typedTuples.stream().map(item -> {
                     if (item.getValue() == null) {
@@ -386,14 +402,14 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                     Long productId = Long.valueOf(item.getValue());
                     Product product = this.getProductById(productId);
                     if (product == null) {
-                        //若商品下架，则从缓存移出
+                        // 若商品下架，则从缓存移出
                         stringRedisTemplate.opsForZSet().remove(key, productId);
                         throw new CustomException("商品已下架");
                     }
                     return product;
                 }).collect(Collectors.toList());
         log.info("List:" + list);
-        //根据ids查询数据库
+        // 根据ids查询数据库
         return Result.success(list);
     }
 
@@ -408,11 +424,11 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         BeanUtils.copyProperties(sourcePageInfo, targetPageInfo);
 
         List<ProductVo> productVoList = productList.stream().map((item -> {
-            //创建dto
+            // 创建dto
             ProductVo productVo = new ProductVo();
             BeanUtils.copyProperties(item, productVo);
 
-            //获取种类名
+            // 获取种类名
             Long id = productVo.getCategoryId();
             Category category = categoryService.getCategoryById(id);
 
@@ -436,7 +452,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             productVo.setCategoryName(category.getCategoryName());
         }
 
-        //获取商品评分
+        // 获取商品评分
         List<Review> reviews = reviewService.getListByProduct(product.getProductId());
         if (reviews == null || reviews.isEmpty()) {
             productVo.setRating(0.0);
@@ -452,7 +468,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         }
         return productVo;
     }
-
 
     /**
      * 根据订单详情计算月收益
@@ -473,6 +488,5 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 
         return totalBenefit;
     }
-
 
 }

@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ze.pigSale.utils;
 
 import cn.hutool.core.util.BooleanUtil;
@@ -16,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static com.ze.pigSale.constants.RedisConstants.*;
-
 
 @Slf4j
 @Component
@@ -44,7 +60,7 @@ public class CacheClient {
     }
 
     public <R, ID> R queryWithPassThrough(
-            String keyPrefix, ID id, Class<R> type, Function<ID, R> dbFallback, Long time, TimeUnit unit) {
+                                          String keyPrefix, ID id, Class<R> type, Function<ID, R> dbFallback, Long time, TimeUnit unit) {
         String key = keyPrefix + id;
         // 1.从redis查询商铺缓存
         String json = stringRedisTemplate.opsForValue().get(key);
@@ -74,7 +90,7 @@ public class CacheClient {
     }
 
     public <R, ID> R queryWithLogicalExpire(
-            String keyPrefix, ID id, Class<R> type, Function<ID, R> dbFallback, Long time, TimeUnit unit) {
+                                            String keyPrefix, ID id, Class<R> type, Function<ID, R> dbFallback, Long time, TimeUnit unit) {
         String key = keyPrefix + id;
         // 1.从redis查询商铺缓存
         String json = stringRedisTemplate.opsForValue().get(key);
@@ -119,7 +135,7 @@ public class CacheClient {
     }
 
     public <R, ID, T> T queryVoWithLogicalExpire(
-            String keyPrefix, ID id, Class<R> type, Function<ID, R> dbFallback, Class<T> returnType, Function<R, T> resultFallBack, Long time, TimeUnit unit) {
+                                                 String keyPrefix, ID id, Class<R> type, Function<ID, R> dbFallback, Class<T> returnType, Function<R, T> resultFallBack, Long time, TimeUnit unit) {
         String key = keyPrefix + id;
         // 1.从redis查询商铺缓存
         String json = stringRedisTemplate.opsForValue().get(key);
@@ -128,19 +144,19 @@ public class CacheClient {
             // 3.不存在key，查询数据库
             R r = dbFallback.apply(id);
             if (r == null) {
-                //为空则缓存空对象
+                // 为空则缓存空对象
                 this.set(key, "", CACHE_NULL_TTL, unit);
                 return null;
             }
-            //设置vo对象
+            // 设置vo对象
             T t = resultFallBack.apply(r);
             this.setWithLogicalExpire(key, t, time, unit);
             return t;
         }
         // 4.命中，需要先把json反序列化为对象
         RedisData redisData = JSONUtil.toBean(json, RedisData.class);
-        //若值为空则返回
-        if (redisData.getData() == null || "".equals(redisData.getData())){
+        // 若值为空则返回
+        if (redisData.getData() == null || "".equals(redisData.getData())) {
             return null;
         }
         R r = JSONUtil.toBean((JSONObject) redisData.getData(), type);
@@ -178,7 +194,7 @@ public class CacheClient {
     }
 
     public <R, ID> R queryWithMutex(
-            String keyPrefix, ID id, Class<R> type, Function<ID, R> dbFallback, Long time, TimeUnit unit) {
+                                    String keyPrefix, ID id, Class<R> type, Function<ID, R> dbFallback, Long time, TimeUnit unit) {
         String key = keyPrefix + id;
         // 1.从redis查询商铺缓存
         String shopJson = stringRedisTemplate.opsForValue().get(key);

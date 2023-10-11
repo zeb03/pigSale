@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ze.pigSale.controller;
 
 import com.ze.pigSale.common.BaseContext;
@@ -27,37 +44,36 @@ public class CartController {
     @Autowired
     private ProductService productService;
 
-//    @PostMapping("/add")
-//    public Result<Cart> add(@RequestBody Cart cart) {
-//        log.info("addCart:{}", cart);
-//
-//        //根据用户id，产品id判断该产品是否已经存在
-//        Cart userCart = cartService.getCart(cart.getProductId());
-//
-//        //若存在，则数量加1，并修改
-//        if (userCart != null) {
-//            Integer quantity = userCart.getQuantity();
-//            userCart.setQuantity(quantity + 1);
-//            cartService.updateCartById(userCart);
-//        } else {
-//            //否则加入购物车
-//            cart.setCreateTime(LocalDateTime.now());
-//            cartService.addCart(cart);
-//            userCart = cart;
-//        }
-//
-//        return Result.success(userCart);
-//    }
+    // @PostMapping("/add")
+    // public Result<Cart> add(@RequestBody Cart cart) {
+    // log.info("addCart:{}", cart);
+    //
+    // //根据用户id，产品id判断该产品是否已经存在
+    // Cart userCart = cartService.getCart(cart.getProductId());
+    //
+    // //若存在，则数量加1，并修改
+    // if (userCart != null) {
+    // Integer quantity = userCart.getQuantity();
+    // userCart.setQuantity(quantity + 1);
+    // cartService.updateCartById(userCart);
+    // } else {
+    // //否则加入购物车
+    // cart.setCreateTime(LocalDateTime.now());
+    // cartService.addCart(cart);
+    // userCart = cart;
+    // }
+    //
+    // return Result.success(userCart);
+    // }
 
     @GetMapping("/list")
     public Result<List<Cart>> list() {
-        //获取用户id
+        // 获取用户id
         Long currentId = BaseContext.getCurrentId();
-        //根据id获取购物车
+        // 根据id获取购物车
         List<Cart> cartList = cartService.getCartListByUser(currentId);
         return Result.success(cartList);
     }
-
 
     @DeleteMapping("/clean")
     public Result<String> clean() {
@@ -68,13 +84,13 @@ public class CartController {
 
     @PutMapping("/edit")
     public Result<String> edit(@RequestBody Cart cart) {
-        //获取商品
+        // 获取商品
         Cart userCart = cartService.getCart(cart.getProductId());
         log.info("cart:{}", cart);
 
-        //加入购物车
+        // 加入购物车
         if (userCart == null) {
-            //设置购物车信息
+            // 设置购物车信息
             Product product = productService.getProductById(cart.getProductId());
             cart.setQuantity(cart.getQuantity());
             cart.setImage(product.getImage());
@@ -85,12 +101,12 @@ public class CartController {
             return Result.success("添加成功");
         }
 
-        //数量增减
+        // 数量增减
         Integer quantity = cart.getQuantity();
         userCart.setQuantity(quantity);
 
         if (quantity == 0) {
-            //移除
+            // 移除
             cartService.deleteCart(userCart);
         } else {
             cartService.updateCartById(userCart);

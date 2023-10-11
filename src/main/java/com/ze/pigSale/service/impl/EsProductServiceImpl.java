@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ze.pigSale.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -61,19 +78,19 @@ public class EsProductServiceImpl implements EsProductService {
 
     @Override
     public int importAll() {
-        //从数据库查询所有商品
+        // 从数据库查询所有商品
         List<Product> list = productService.list();
         if (CollectionUtils.isEmpty(list)) {
             return 0;
         }
 
-        //处理种类
+        // 处理种类
         List<EsProduct> esProductList = list.stream().map(this::getEsProduct).collect(Collectors.toList());
 
-        //导入索引库
+        // 导入索引库
         Iterable<EsProduct> esProducts = esProductRepository.saveAll(esProductList);
 
-        //计算记录数
+        // 计算记录数
         int count = 0;
         for (EsProduct esProduct : esProducts) {
             count++;
@@ -86,14 +103,14 @@ public class EsProductServiceImpl implements EsProductService {
         if (item == null) {
             return null;
         }
-        //处理种类名
+        // 处理种类名
         Long categoryId = item.getCategoryId();
         Category category = categoryService.getCategoryById(categoryId);
         if (category == null) {
             throw new CustomException("种类不存在");
         }
         String categoryName = category.getCategoryName();
-        //属性拷贝
+        // 属性拷贝
         EsProduct esProduct = new EsProduct();
         BeanUtils.copyProperties(item, esProduct);
         esProduct.setCategoryName(categoryName);
@@ -143,20 +160,18 @@ public class EsProductServiceImpl implements EsProductService {
     @Override
     public Result<List> suggest(String prefix) {
         try {
-            //创建索引库
+            // 创建索引库
             SearchRequest request = new SearchRequest(SEARCH_INDEX_REQUEST);
-            //根据前缀补全
-            request.source().suggest(new SuggestBuilder().
-                    addSuggestion(
-                            PRODUCT_SUGGEST,
-                            SuggestBuilders
-                                    .completionSuggestion(SUGGESTION_FIELD)
-                                    .size(SUGGESTION_SIZE)
-                                    .skipDuplicates(true)
-                                    .prefix(prefix)
-                    ));
+            // 根据前缀补全
+            request.source().suggest(new SuggestBuilder().addSuggestion(
+                    PRODUCT_SUGGEST,
+                    SuggestBuilders
+                            .completionSuggestion(SUGGESTION_FIELD)
+                            .size(SUGGESTION_SIZE)
+                            .skipDuplicates(true)
+                            .prefix(prefix)));
             SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
-            //解析结果
+            // 解析结果
             ArrayList<String> list = handleSuggestion(response);
             return Result.success(list);
         } catch (IOException e) {
@@ -179,24 +194,24 @@ public class EsProductServiceImpl implements EsProductService {
     @Override
     public Result<Map<String, List>> aggregate(String keyword, Integer pageNum, Integer pageSize) {
         try {
-            //创建索引库
+            // 创建索引库
             SearchRequest request = new SearchRequest(EsConstants.SEARCH_INDEX_REQUEST);
             if (!StringUtil.isEmpty(keyword)) {
-                //根据关键字搜索
+                // 根据关键字搜索
                 request.source()
                         .query(QueryBuilders.matchQuery(EsConstants.SEARCH_KEYWORDS, keyword));
             }
-            //种类聚合和产地聚合
+            // 种类聚合和产地聚合
             request.source().size(0)
                     .aggregation(AggregationBuilders
                             .terms(EsConstants.CATEGORY_AGGREGATION).field(CATEGORY_FIELD).size(100))
                     .aggregation(AggregationBuilders
                             .terms(ORIGIN_AGGREGATION).field(ORIGIN_FIELD).size(100));
-            //发送请求
+            // 发送请求
             SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
-            //解析结果
+            // 解析结果
             HashMap<String, List> map = handleAggregation(response);
-            //返回
+            // 返回
             return Result.success(map);
         } catch (IOException e) {
             e.printStackTrace();
