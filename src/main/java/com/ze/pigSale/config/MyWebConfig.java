@@ -128,8 +128,9 @@ public class MyWebConfig implements WebMvcConfigurer {
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 .title("猪联网电子商务")
-                .version("2.0")
+                .version("3.0")
                 .description("pigSale接口文档")
                 .build();
     }
+
 }

@@ -18,7 +18,6 @@
 package com.ze.pigSale;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.ze.pigSale.constants.RedisConstants;
 import com.ze.pigSale.entity.Category;
 import com.ze.pigSale.entity.Product;
 import com.ze.pigSale.entity.Review;
@@ -41,11 +40,9 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.ze.pigSale.constants.MqConstants.ORDER_QUEUE_NAME;
 import static com.ze.pigSale.constants.RedisConstants.CACHE_SHOP_KEY;
 import static com.ze.pigSale.constants.RedisConstants.PRODUCT_STOCK_KEY;
 
@@ -140,5 +137,9 @@ class PigSaleApplicationTests {
                 list,
                 args);
         System.out.println(execute);
+    }
+
+    @Test
+    void testScan() {
     }
 }
