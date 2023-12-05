@@ -75,10 +75,10 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(rollbackFor = Exception.class)
     public void updateProduct(Product product) {
         //判断权限
-        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.EDIT_PRODUCT);
-        if (!hasPermission) {
-            throw new CustomException(CommonUtil.NOT_PERMISSION);
-        }
+//        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.EDIT_PRODUCT);
+//        if (!hasPermission) {
+//            throw new CustomException(CommonUtil.NOT_PERMISSION);
+//        }
 
         product.setUpdateTime(LocalDateTime.now());
         productMapper.updateProduct(product);

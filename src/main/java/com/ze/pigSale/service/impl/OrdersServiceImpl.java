@@ -137,6 +137,7 @@ public class OrdersServiceImpl implements OrdersService {
             Long productId = item.getProductId();
             Product product = productService.getProductById(productId);
             Integer stock = product.getStock();
+            log.info("Product " + product);
             if (stock < item.getQuantity()) {
                 throw new CustomException("提交订单失败, 商品" + product.getProductName() + "库存不足");
             }
@@ -144,12 +145,14 @@ public class OrdersServiceImpl implements OrdersService {
             //减少商品库存
             product.setStock(stock - item.getQuantity());
             productService.updateProduct(product);
+            log.info("修改商品成功");
 
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrderId(ordersDto.getId());
             orderDetail.setPrice(item.getAmount());
             orderDetail.setQuantity(item.getQuantity());
             orderDetail.setProductId(item.getProductId());
+            log.info("OrderDetail" + orderDetail);
             return orderDetail;
         }).collect(Collectors.toList());
 
@@ -285,7 +288,7 @@ public class OrdersServiceImpl implements OrdersService {
 
         //增加产品库存
         List<OrderDetail> list = ordersDetailService.getListByOrderId(orders.getId());
-        list.stream().map(item->{
+        list.stream().map(item -> {
             Long productId = item.getProductId();
             Integer quantity = item.getQuantity();
             Product product = productService.getProductById(productId);
