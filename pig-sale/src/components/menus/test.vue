@@ -11,6 +11,10 @@
         </div>
         <div class="chart-container">
             <div id="chart2" class="chart"></div>
+            <select class="dropdown2" v-model="selectedYear" @change="getBenefit">
+                <option value="2023">2023年</option>
+                <option value="2024">2024年</option>
+            </select>
         </div>
     </div>
 </template>
@@ -42,6 +46,14 @@
         padding: 5px;
         font-size: 14px;
     }
+
+    .dropdown2 {
+        position: absolute;
+        top: 430px;
+        left: 1100px;
+        padding: 5px;
+        font-size: 14px;
+    }
 </style>
 
 <script>
@@ -53,6 +65,7 @@
         data() {
             return {
                 selectedMonth: '3',
+                selectedYear: '2023',
                 salesObj: {
                     productNames: [],
                     sales: []
@@ -85,7 +98,12 @@
                     });
             },
             getBenefit() {
-                request.get('/product/benefit').then(res => {
+                const year = parseInt(this.selectedYear);
+                request.get('/product/benefit', {
+                    params: {
+                        year: year
+                    }
+                }).then(res => {
                     console.log(res);
                     if (res.code === 200) {
                         this.benefitData = res.data;
@@ -122,7 +140,7 @@
                             rotate: 45,
                             interval: 0
                         },
-                        name:'product'
+                        name: 'product'
                     },
                     yAxis: {},
                     series: [
@@ -190,8 +208,8 @@
                     // 更新series的显示或隐藏
                     chart.setOption({
                         series: [
-                            { show: seriesIndex === 0 },  // 折线图
-                            { show: seriesIndex === 1 },  // 柱状图
+                            {show: seriesIndex === 0},  // 折线图
+                            {show: seriesIndex === 1},  // 柱状图
                         ],
                     });
                 });

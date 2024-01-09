@@ -133,8 +133,7 @@ export default {
         showRoleWithPermissions() {
             this.$api.permissions.getAllAdminRole()
                 .then(response => {
-                    
-                    console.log(res)
+                    console.log(response)
                     this.roles = response.data
                 })
         },

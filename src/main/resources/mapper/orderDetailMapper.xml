@@ -44,7 +44,8 @@
                 SELECT t3.order_detail_id
                 FROM review t3
                 WHERE t1.order_detail_id = t3.order_detail_id
-            );
+            )
+        Order by checkout_time desc;
     </select>
 
     <select id="getListByTime" resultType="com.ze.pigSale.dto.OrderDetailDto">

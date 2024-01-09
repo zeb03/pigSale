@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Objects;
-
 /**
  * author: zebii
  * Date: 2023-03-13-15:54
@@ -44,7 +43,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserById(Long id) {
         User user = userMapper.getUserById(id);
-        user.setPassword(null);
         return user;
     }
 
@@ -57,9 +55,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public void register(User user) {
         //设置初始状态
-        user.setRole(0);
+        if (user.getRole() == null){
+            user.setRole(0);
+        }
         user.setStatus(1);
-        user.setImage("avatar.webp");
+        user.setImage("avatar.jpg");
         User userResult = userMapper.getUserByUsernameOrPhone(user);
         if (userResult != null) {
             throw new CustomException("用户名或手机号已被注册！");

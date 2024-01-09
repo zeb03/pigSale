@@ -86,6 +86,7 @@
 <script>
     import CategorySelect from '../category/CategorySelect.vue';
     import axios from "axios";
+    import request from "@/utils/request";
 
 
     export default {
@@ -124,11 +125,13 @@
                 const formData = new FormData()
                 formData.append('file', param.file)
                 const url = '/common/upload'
+                console.log('图片', param.file)
+
                 try {
-                    await axios.post(url, formData).then(res => {
+                    await request.post(url, formData).then(res => {
                         console.log('上传图片成功')
                         console.log(res.data)
-                        this.ruleForm.image = res.data.data
+                        this.ruleForm.image = res.data
                         console.log("image:")
                         console.log(this.ruleForm.image)
                         // this.addGoodsdata()

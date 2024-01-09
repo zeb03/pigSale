@@ -9,9 +9,7 @@
         <result property="userId" column="user_id" jdbcType="INTEGER"/>
         <result property="addressId" column="address_id" jdbcType="INTEGER"/>
         <result property="totalPrice" column="total_price" jdbcType="DECIMAL"/>
-        <result property="state" column="state" jdbcType="VARCHAR"/>
         <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
-        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">
@@ -54,6 +52,7 @@
                 <![CDATA[and checkout_time < #{endTime}]]>
             </if>
         </where>
+        order by checkout_time desc
     </select>
 
     <select id="list" resultType="com.ze.pigSale.entity.Orders">

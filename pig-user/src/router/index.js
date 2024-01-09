@@ -31,6 +31,7 @@ const routes = [
     },
     { path: '/userHome', component: UserHomeView },
     { path: '/search/:keyword', component: SearchResult },
+    { path: '/search', component: SearchResult },
     { path: '/goods/:productId', component: GoodsDetails },
     { path: '/review', name: "review", component: Review },
     { path: '/userInfo', redirect: '/userInfo/-1' },

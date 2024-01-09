@@ -1,15 +1,15 @@
 package com.ze.pigSale.service.impl;
 
+
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
-import com.ze.pigSale.entity.Permissions;
 import com.ze.pigSale.entity.User;
 import com.ze.pigSale.entity.UserPermissions;
 import com.ze.pigSale.enums.PermissionEnum;
 import com.ze.pigSale.mapper.UserPermissionsMapper;
-import com.ze.pigSale.service.PermissionService;
 import com.ze.pigSale.service.UserPermissionService;
 import com.ze.pigSale.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +22,7 @@ import java.util.List;
  * Date: 2023-04-09-16:10
  */
 @Service
+@Slf4j
 public class UserPermissionServiceImpl implements UserPermissionService {
 
     @Autowired
@@ -33,7 +34,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
     @Override
     public List<UserPermissions> getByUserId(Long userId) {
         User user = userService.getUserById(userId);
-
+        user.setPassword(null);
         return userPermissionsMapper.getByUserId(user);
     }
 
@@ -41,6 +42,8 @@ public class UserPermissionServiceImpl implements UserPermissionService {
     public boolean hasPermission(PermissionEnum permissionEnum) {
         Long userId = BaseContext.getCurrentId();
         User user = userService.getUserById(userId);
+        log.info("UserId " + userId);
+        log.info("User " + user);
         List<UserPermissions> permissions = this.getByUserId(user.getUserId());
         boolean hasPermission = false;
         for (UserPermissions permission : permissions) {

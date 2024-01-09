@@ -82,6 +82,7 @@ public class UserController {
 
 //      登录成功，将员工id存入Session并返回登录成功结果
         request.getSession().getServletContext().setAttribute("user", userResult.getUserId());
+
         log.info("登录成功:" + userResult.getUserId());
         return Result.success(userResult);
     }
@@ -127,7 +128,6 @@ public class UserController {
 
     /**
      * 添加管理员
-     * 待完善，可以给管理员各种权限
      *
      * @param user
      * @return
@@ -140,6 +140,7 @@ public class UserController {
         if (BaseContext.getCurrentId() != 1) {
             throw new CustomException("此用户无权限");
         }
+        user.setRole(2);
         userService.register(user);
         List<Permissions> permissions = permissionService.getByRoleId(user.getRole());
         permissions.stream().map(item -> {

@@ -10,7 +10,7 @@
                         <h4 style="font-size: 20px;font-weight: bolder;">猪销售后台管理系统</h4>
                     </el-col>
                     <el-col :span="3">
-                        <span class="uname">{{ username + " " + loginID }}</span>                      
+                        <span class="uname">{{ username + " " + loginID }}</span>
                     </el-col>
                     <el-col :span="2">
                         <el-button plain @click="onLogout">退出登录</el-button>
@@ -67,54 +67,61 @@
 </template>
 
 <script>
-export default {
-    name: 'AdminHome',
-    data() {
-        return {
-            loginID: '登陆ID',
-            username: '用户名'
-        }
-    },
-    mounted() {
-        this.loginID = localStorage.getItem('loginID')
-        this.username = localStorage.getItem('username')
-    },
-    methods: {
-        onLogout() {
-            //移除token和loginID
-            localStorage.removeItem('token1')
-            localStorage.removeItem('loginID')
+    import request from "@/utils/request";
 
-            this.$router.push('/login')
+    export default {
+        name: 'AdminHome',
+        data() {
+            return {
+                loginID: '登陆ID',
+                username: '用户名'
+            }
+        },
+        mounted() {
+            this.loginID = localStorage.getItem('loginID')
+            this.username = localStorage.getItem('username')
+        },
+        methods: {
+            onLogout() {
+                //移除token和loginID
+                localStorage.removeItem('token1')
+                localStorage.removeItem('loginID')
+                this.logout()
+                this.$router.push('/login')
+            },
+            logout() {
+                request.get('/user/logout').then(res => {
+                    console.log(res);
+                })
+            }
         }
     }
-}
 </script>
 
 <style lang="less" scoped>
-.el-header,
-.el-footer {
+  .el-header,
+  .el-footer {
     background-color: #B3C0D1;
     color: #333;
     line-height: 60px;
-}
+  }
 
-.uname {
+  .uname {
     display: block;
     font-size: 16px;
     width: 200px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-}
+  }
 
-.el-aside {
+  .el-aside {
     background-color: #D3DCE6;
     color: #333;
-}
+  }
 
-.el-main {
+  .el-main {
     background-color: #E9EEF3;
     color: #333;
-}
+  }
 </style>

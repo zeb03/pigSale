@@ -37,6 +37,17 @@ function orderAgain(orderId) {
     })
 }
 
+function confirmOrder(orderId) {
+    return request({
+        method: 'put',
+        url: '/orders/status',
+        data: {
+            id: orderId,
+            status: 4
+        }
+    })
+}
+
 function cancel(orderId) {
     return request({
         method: 'delete',
@@ -44,4 +55,4 @@ function cancel(orderId) {
     })
 }
 
-export default { getAll, getUserNotReviewOrder, submit, orderAgain, cancel }
+export default {getAll, getUserNotReviewOrder, submit, orderAgain, cancel, confirmOrder}

@@ -35,8 +35,10 @@ export default {
         if (keyword) {
             this.keyword = keyword
         }
+    },
+    mounted() {
+        this.onSearchGoods(this.keyword)
     }
-
 }
 </script>
 

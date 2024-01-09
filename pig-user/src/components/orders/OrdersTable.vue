@@ -17,7 +17,8 @@
             </el-table-column>
             <el-table-column align="center" label="操作" width="140">
                 <template slot-scope="{ row }">
-                    <el-button v-if="row.status !== 4" type="primary" plain @click="onRemove(row.id)">取消/退款</el-button>
+                    <el-button v-if="row.status === 3" type="primary" plain @click="confirmOrder(row.id)">确认收货</el-button>
+                    <el-button v-else-if="row.status !== 4" type="primary" plain @click="onRemove(row.id)">取消/退款</el-button>
                     <el-button v-else type="primary" plain @click="orderAgain(row.id)">再下一单</el-button>
 
                 </template>
@@ -88,8 +89,20 @@ export default {
                         this.$message.error(response.msg)
                     }
                 })
-        }
+        },
+        confirmOrder(orderId) {
+            this.$api.orders.confirmOrder(orderId)
+                .then((response) => {
+                    // console.log(response);
 
+                    if (response.code === 200) {
+                        this.$message.success(response.msg)
+                        this.$emit('cancelOrder')
+                    } else {
+                        this.$message.error(response.msg)
+                    }
+                })
+        }
     }
 }
 </script>

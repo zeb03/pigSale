@@ -21,7 +21,7 @@
             <div class="rating-label">评分：
                 <el-input v-model="review.rating" placeholder="请输入评分（1~5）" size="mini" type="number"
                           @input="numberChange(arguments[0], 5)" @change="numberChange(arguments[0], 5)"
-                          style="width: 50px;"></el-input>
+                          style="width: 100px;"></el-input>
             </div>
             <el-rate v-model="review.rating" show-score text-color="#ff9900">
             </el-rate>
@@ -139,11 +139,13 @@
                 const formData = new FormData()
                 formData.append('file', param.file)
                 const url = '/common/upload'
+
                 try {
                     const res = await request.post(url, formData).then(res => {
                         console.log('上传图片成功' + res.data)
                         this.filename = res.data
                         this.review.image = this.filename
+                        console.log(this.review.image)
                         this.submitReview()
                     })
                 } catch (error) {
@@ -178,7 +180,7 @@
                     )
             },
             getImgUrl(img) {
-                return `http://localhost:8080/common/download?filename=${img}`
+                return `http://localhost:9999/common/download?filename=${img}`
             },
             handelSubmit() {
                 //提交图片和评论

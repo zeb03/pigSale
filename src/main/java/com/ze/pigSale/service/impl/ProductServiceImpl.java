@@ -185,7 +185,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<BigDecimal> getBenefit() {
+    public List<BigDecimal> getBenefit(Integer year) {
         //判断权限
         boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.VIEW_DATA);
         if (!hasPermission) {
@@ -193,7 +193,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
         // 获取当前年份
-        int currentYear = YearMonth.now().getYear();
+        int currentYear = year;
 
         // 构建收益数据列表
         List<BigDecimal> benefitData = new ArrayList<>();
@@ -205,6 +205,9 @@ public class ProductServiceImpl implements ProductService {
             // 根据年份和月份获取起始时间和结束时间
             LocalDateTime startDateTime = yearMonth.atDay(1).atStartOfDay();
             LocalDateTime endDateTime = yearMonth.atEndOfMonth().atTime(23, 59, 59);
+
+            log.info("StartDateTime: " + startDateTime);
+            log.info("EndDateTime: " + endDateTime);
 
             // 根据YearMonth查询对应的订单详情列表
             List<OrderDetailDto> orders = orderDetailMapper.getListByTime(endDateTime, startDateTime);
@@ -220,10 +223,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Integer> getOrderCount() {
         //判断权限
-        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.VIEW_DATA);
-        if (!hasPermission) {
-            throw new CustomException(CommonUtil.NOT_PERMISSION);
-        }
+//        boolean hasPermission = userPermissionService.hasPermission(PermissionEnum.VIEW_DATA);
+//        if (!hasPermission) {
+//            throw new CustomException(CommonUtil.NOT_PERMISSION);
+//        }
 
         // 获取当前年份
         int currentYear = YearMonth.now().getYear();

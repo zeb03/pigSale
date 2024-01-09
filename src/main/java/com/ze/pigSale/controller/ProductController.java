@@ -150,6 +150,7 @@ public class ProductController {
      */
     @PostMapping
     public Result<Product> add(@RequestBody Product product) {
+        log.info("Product Image:" + product.getImage());
         productService.insertProduct(product);
         return Result.success(product);
     }
@@ -177,7 +178,7 @@ public class ProductController {
     }
 
     /**
-     * 获取最近销量
+     * 获取最近销量，暂时没用到
      *
      */
     @GetMapping("/salesRank")
@@ -206,12 +207,12 @@ public class ProductController {
     }
 
     /**
-     * 获取最近一年总收益
+     * 获取一年总收益，可以选择年份
      *
      */
     @GetMapping("/benefit")
-    public Result<List<BigDecimal>> getBenefit() {
-        List<BigDecimal> benefit = productService.getBenefit();
+    public Result<List<BigDecimal>> getBenefit(Integer year) {
+        List<BigDecimal> benefit = productService.getBenefit(year);
         return Result.success(benefit);
     }
 
@@ -223,4 +224,5 @@ public class ProductController {
         List<Integer> orderCount = productService.getOrderCount();
         return Result.success(orderCount);
     }
+
 }

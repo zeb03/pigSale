@@ -54,7 +54,7 @@ export default {
     },
     created: function () {
         //发送请求，请求商品第一页
-        this.requestGoodsData({})
+        // this.requestGoodsData({})
     },
     methods: {
         // 请求当前页码的数据

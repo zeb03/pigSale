@@ -66,10 +66,10 @@ public interface ProductService {
     Map<String, BigDecimal> getAllBenefit(Integer month);
 
     /**
-     * 获取最近收益
+     * 获取一年收益
      * @return
      */
-    List<BigDecimal> getBenefit();
+    List<BigDecimal> getBenefit(Integer year);
 
     /**
      * 获取订单数量

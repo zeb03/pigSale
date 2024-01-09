@@ -55,11 +55,13 @@
         select *
         from review
         where user_id = #{userId}
+        order by publish_time desc
     </select>
 
     <select id="getReviewListByProduct" resultType="com.ze.pigSale.entity.Review">
         select *
         from review
         where product_id = #{productId}
+        order by publish_time desc
     </select>
 </mapper>
