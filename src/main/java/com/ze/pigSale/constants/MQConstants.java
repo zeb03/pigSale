@@ -23,13 +23,16 @@ package com.ze.pigSale.constants;
  */
 public class MQConstants {
 
-    public static final String INSERT_QUEUE_NAME = "product.insert.queue";
-    public static final String DELETE_QUEUE_NAME = "product.delete.queue";
-    public static final String EXCHANGE_NAME = "product.topic";
-    public static final String DELETE_KEY = "product.delete";
-    public static final String INSERT_KEY = "product.insert";
-    public static final String ORDER_QUEUE_NAME = "order.queue";
-    public static final String CANAL_STOCK_NAME = "pigsale-canal-product-stock";
-    public static final String CANAL_CONSUMER_GROUP = "canal-group";
+    public static final String DELETE = "delete";
+    public static final String INSERT = "insert";
+
+    public static final String PRODUCT_NAME = "product_topic";
+    public static final String PRODUCT_CON_GROUP = "product_con_group";
+
+    public static final String CANAL_STOCK_NAME = "canal_product_stock";
+    public static final String CANAL_CON_GROUP = "canal_group";
+
+    public static final String ORDER_NAME = "order_queue";
+    public static final String ORDER_CON_GROUP = "order_con_group";
 
 }

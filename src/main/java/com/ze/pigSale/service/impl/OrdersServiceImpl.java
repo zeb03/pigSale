@@ -35,9 +35,12 @@ import com.ze.pigSale.entity.*;
 import com.ze.pigSale.mapper.OrdersMapper;
 import com.ze.pigSale.service.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +50,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.ze.pigSale.constants.MQConstants.ORDER_QUEUE_NAME;
+import static com.ze.pigSale.constants.MQConstants.ORDER_NAME;
 import static com.ze.pigSale.constants.OrderConstants.*;
 import static com.ze.pigSale.constants.OrderConstants.ORDER_HAS_CANCEL;
 import static com.ze.pigSale.constants.RedisConstants.*;
@@ -76,9 +79,9 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
     @Resource
     private OrdersService ordersService;
     @Resource
-    private RabbitTemplate rabbitTemplate;
-    @Resource
     private OrderCreateChainContext<OrdersDTO> orderCreateChainContext;
+    @Resource
+    private RocketMQTemplate rocketMQTemplate;
 
     @Override
     public Orders getById(Long ordersId) {
@@ -127,7 +130,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void submit(OrdersDTO ordersDto) {
-        //责任链验证
+        // 责任链验证
         orderCreateChainContext.handle(ordersDto);
 
         // 设置订单id
@@ -142,7 +145,23 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
         orderMq.setUserId(BaseContext.getCurrentId());
 
         // 发送订单号、商品列表、用户号到消息队列
-        rabbitTemplate.convertAndSend(ORDER_QUEUE_NAME, JSONUtil.toJsonStr(orderMq));
+        // rabbitTemplate.convertAndSend(ORDER_QUEUE_NAME, JSONUtil.toJsonStr(orderMq));
+        rocketMQTemplate.asyncSend(ORDER_NAME, MessageBuilder.withPayload(orderMq).build(), new SendCallback() {
+
+            @Override
+            public void onSuccess(SendResult sendResult) {
+                // 处理消息发送成功逻辑
+                log.info("订单消息发送成功");
+            }
+
+            @Override
+            public void onException(Throwable throwable) {
+                // 处理消息发送异常逻辑
+                log.info("订单消息发送失败");
+                log.info("{}", throwable);
+                throw new CustomException("订单消息发送失败");
+            }
+        });
 
         // 返回订单号给用户
     }

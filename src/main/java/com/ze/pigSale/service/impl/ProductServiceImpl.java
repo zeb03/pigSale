@@ -18,6 +18,7 @@
 package com.ze.pigSale.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageInfo;
@@ -34,10 +35,12 @@ import com.ze.pigSale.service.*;
 import com.ze.pigSale.utils.CacheClient;
 import com.ze.pigSale.vo.ProductVo;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,10 +93,10 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     private CacheClient cacheClient;
 
     @Resource
-    private RabbitTemplate rabbitTemplate;
+    private UserProductService userProductService;
 
     @Resource
-    private UserProductService userProductService;
+    private RocketMQTemplate rocketMQTemplate;
 
     @Override
     public Product getProductById(Long id) {
@@ -122,7 +125,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         productMapper.insertProduct(product);
 
         // 将消息发布到队列，同步到es
-        rabbitTemplate.convertAndSend(EXCHANGE_NAME, INSERT_KEY, product.getProductId());
+//        rabbitTemplate.convertAndSend(EXCHANGE_NAME, INSERT_KEY, product.getProductId());
+        SendResult sendResult = rocketMQTemplate.syncSend(PRODUCT_NAME + ":" + INSERT, MessageBuilder.withPayload(product.getProductId()).build());
+        log.info("【sendMsg】sendResult={}", JSON.toJSONString(sendResult));
     }
 
     @Override
@@ -151,7 +156,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             cartService.updateCartById(cart);
         }
         // 将消息发布到队列，同步到es
-        rabbitTemplate.convertAndSend(EXCHANGE_NAME, INSERT_KEY, product.getProductId());
+//        rabbitTemplate.convertAndSend(EXCHANGE_NAME, INSERT_KEY, product.getProductId());
+        SendResult sendResult = rocketMQTemplate.syncSend(PRODUCT_NAME + ":" + INSERT, MessageBuilder.withPayload(product.getProductId()).build());
     }
 
     private void sendMessage(Long productId) {
@@ -178,7 +184,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         // 删除redis缓存
         stringRedisTemplate.delete(CACHE_SHOP_KEY + productId);
         // 将消息发布到队列，同步到es
-        rabbitTemplate.convertAndSend(EXCHANGE_NAME, DELETE_KEY, productId);
+//        rabbitTemplate.convertAndSend(EXCHANGE_NAME, DELETE_KEY, productId);
+        SendResult sendResult = rocketMQTemplate.syncSend(PRODUCT_NAME + ":" + DELETE, MessageBuilder.withPayload(productId).build());
     }
 
     @Override

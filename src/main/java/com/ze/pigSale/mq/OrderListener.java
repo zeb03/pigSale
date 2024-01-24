@@ -17,14 +17,16 @@
 
 package com.ze.pigSale.mq;
 
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ze.pigSale.common.CustomException;
+import com.ze.pigSale.constants.MQConstants;
 import com.ze.pigSale.dto.OrderMQ;
 import com.ze.pigSale.entity.*;
 import com.ze.pigSale.service.*;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
+import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -33,14 +35,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.ze.pigSale.constants.MQConstants.ORDER_QUEUE_NAME;
+import static com.ze.pigSale.constants.MQConstants.ORDER_NAME;
 
 /**
  * @author zeb
- * @Date 2023-08-08 15:58
+ * @Date 2024-01-24 16:24
  */
+@Slf4j
 @Component
-public class OrderListener {
+@RequiredArgsConstructor
+@RocketMQMessageListener(topic = ORDER_NAME, consumerGroup = MQConstants.ORDER_CON_GROUP)
+public class OrderListener implements RocketMQListener<OrderMQ> {
 
     @Resource
     private ProductService productService;
@@ -54,18 +59,16 @@ public class OrderListener {
     private AddressService addressService;
     @Resource
     private OrdersService ordersService;
-    @Resource
-    private StringRedisTemplate stringRedisTemplate;
 
-    @RabbitListener(queues = ORDER_QUEUE_NAME)
-    public void orderQueueListener(String orderMqJson) {
-        OrderMQ orderMq = JSONUtil.toBean(orderMqJson, OrderMQ.class);
-        Long orderId = orderMq.getOrderId();
-        Long userId = orderMq.getUserId();
-        Long addressId = orderMq.getAddress();
+    @Override
+    public void onMessage(OrderMQ msg) {
+        log.info("监听到消息：msg={}", msg);
+        Long orderId = msg.getOrderId();
+        Long userId = msg.getUserId();
+        Long addressId = msg.getAddress();
 
         // 获取购物车项
-        List<Long> list = orderMq.getCartId();
+        List<Long> list = msg.getCartId();
         List<Cart> cartList = cartService.getCartListByIds(list);
 
         // 减少库存，设置订单明细
@@ -93,9 +96,9 @@ public class OrderListener {
                 throw new CustomException("商品库存不足");
             }
 
-            //TODO: 此处需要保证缓存的数据一致性，可选方案有：先改数据库再删缓存/延迟双删/Binlog
-            //此处采用binlog订阅的方式实现，具体查看canal包
-            //stringRedisTemplate.delete(PRODUCT_STOCK_KEY + productId);
+            // 此处需要保证缓存的数据一致性，可选方案有：先改数据库再删缓存/延迟双删/Binlog
+            // 此处采用binlog订阅的方式实现，具体查看canal包
+            // stringRedisTemplate.delete(PRODUCT_STOCK_KEY + productId);
 
             // 设置订单明细信息
             return getOrderDetail(orderId, item);

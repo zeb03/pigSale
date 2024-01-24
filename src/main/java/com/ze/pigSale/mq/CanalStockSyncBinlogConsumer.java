@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ze.pigSale.mq;
 
 import cn.hutool.core.collection.CollUtil;
@@ -25,10 +42,7 @@ import java.util.Objects;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RocketMQMessageListener(
-        topic = MQConstants.CANAL_STOCK_NAME,
-        consumerGroup = MQConstants.CANAL_CONSUMER_GROUP
-)
+@RocketMQMessageListener(topic = MQConstants.CANAL_STOCK_NAME, consumerGroup = MQConstants.CANAL_CON_GROUP)
 public class CanalStockSyncBinlogConsumer implements RocketMQListener<CanalBinlogEvent> {
 
     @Autowired
@@ -48,10 +62,10 @@ public class CanalStockSyncBinlogConsumer implements RocketMQListener<CanalBinlo
 
         log.info("binlog_message:{}", message);
 
-        //对数据处理
+        // 对数据处理
         List<Map<String, Object>> messageDataList = new ArrayList<>();
         for (int i = 0; i < message.getOld().size(); i++) {
-            //message.getOld只保存了被修改的字段的旧数据列表，当此字段是stock时我们才需要更新缓存
+            // message.getOld只保存了被修改的字段的旧数据列表，当此字段是stock时我们才需要更新缓存
             Map<String, Object> oldDataMap = message.getOld().get(i);
             if (oldDataMap.get("stock") != null && StrUtil.isNotBlank(oldDataMap.get("stock").toString())) {
                 Map<String, Object> currentDataMap = message.getData().get(i);
