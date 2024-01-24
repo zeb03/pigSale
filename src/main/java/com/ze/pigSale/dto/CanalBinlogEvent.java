@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.ze.pigSale.canal;
+package com.ze.pigSale.dto;
 
 import lombok.Data;
 import java.util.List;

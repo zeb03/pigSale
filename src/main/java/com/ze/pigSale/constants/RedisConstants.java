@@ -41,4 +41,10 @@ public class RedisConstants {
     public static final String FEED_FEEDBACK_KEY = "feed:feedback:";
 
     public static final String PRODUCT_STOCK_KEY = "product:stock:";
+
+    /**
+     * 用户注册可复用用户名分片，Key Prefix + Idx
+     */
+    public static final String USER_REGISTER_REUSE_SHARDING_KEY = "index12306-user-service:user-reuse:";
+
 }

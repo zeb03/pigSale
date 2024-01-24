@@ -19,7 +19,7 @@ package com.ze.pigSale.mq;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import com.ze.pigSale.canal.CanalBinlogEvent;
+import com.ze.pigSale.dto.CanalBinlogEvent;
 import com.ze.pigSale.constants.MQConstants;
 import com.ze.pigSale.constants.RedisConstants;
 import lombok.RequiredArgsConstructor;

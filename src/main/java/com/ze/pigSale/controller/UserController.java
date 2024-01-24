@@ -129,7 +129,7 @@ public class UserController {
     }
 
     /**
-     * 移除用户
+     * 注销用户
      *
      * @param user
      * @param request

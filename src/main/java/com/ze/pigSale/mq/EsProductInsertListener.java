@@ -3,7 +3,7 @@ package com.ze.pigSale.mq;
 import com.ze.pigSale.constants.MQConstants;
 import com.ze.pigSale.entity.EsProduct;
 import com.ze.pigSale.entity.Product;
-import com.ze.pigSale.repository.EsProductRepository;
+import com.ze.pigSale.service.repository.EsProductRepository;
 import com.ze.pigSale.service.EsProductService;
 import com.ze.pigSale.service.ProductService;
 import lombok.RequiredArgsConstructor;

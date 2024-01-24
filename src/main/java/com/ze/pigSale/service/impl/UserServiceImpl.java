@@ -25,11 +25,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import com.google.protobuf.ServiceException;
 import com.ze.pigSale.anno.PermissionAnno;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
-import com.ze.pigSale.constants.ExceptionConstants;
 import com.ze.pigSale.dto.FeedBackDTO;
 import com.ze.pigSale.dto.UserDTO;
 import com.ze.pigSale.entity.Orders;
@@ -43,7 +43,10 @@ import com.ze.pigSale.service.ProductService;
 import com.ze.pigSale.service.UserPermissionService;
 import com.ze.pigSale.service.UserService;
 import com.ze.pigSale.utils.RegexUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RBloomFilter;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
@@ -51,13 +54,14 @@ import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.ze.pigSale.constants.RedisConstants.*;
-import static com.ze.pigSale.enums.PermissionEnum.*;
+import static com.ze.pigSale.enums.PermissionEnum.EDIT_USER;
+import static com.ze.pigSale.enums.PermissionEnum.HANDLE_FEEDBACK;
+import static com.ze.pigSale.utils.UserReuseUtil.hashShardingIdx;
 
 /**
  * author: zebii
@@ -65,6 +69,7 @@ import static com.ze.pigSale.enums.PermissionEnum.*;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     @Resource
@@ -79,6 +84,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private ProductService productService;
     @Resource
     private OrdersService ordersService;
+    @Resource
+    private final RBloomFilter<String> userRegisterCachePenetrationBloomFilter;
 
     @Override
     public User getUserById(Long id) {
@@ -98,13 +105,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setRole(0);
         user.setStatus(1);
         user.setImage("avatar.webp");
-        User userResult = userMapper.getUserByUsernameOrPhone(user);
-        if (userResult != null) {
-            throw new CustomException("用户名或手机号已被注册！");
+        // 使用布隆过滤器防止缓存穿透
+        String username = user.getUsername();
+        boolean hasUserName = userRegisterCachePenetrationBloomFilter.contains(username);
+        //此处可能存在误判，但是如果查询不到，则数据库一定是没有的
+        if (hasUserName) {
+            //查询缓存判断该用户名是否已经注销，注销用户名采用分片存储
+            Boolean isReused = stringRedisTemplate.opsForSet().isMember(USER_REGISTER_REUSE_SHARDING_KEY + hashShardingIdx(username), username);
+            if (Boolean.FALSE.equals(isReused)) {
+                throw new CustomException("用户名或手机号已被注册！");
+            }
         }
-
+        log.info("注册用户验证通过");
+//        User userResult = userMapper.getUserByUsernameOrPhone(user);
+//        if (userResult != null) {
+//            throw new CustomException("用户名或手机号已被注册！");
+//        }
         user.setPassword(DigestUtils.md5DigestAsHex(user.getPassword().getBytes()));
-        userMapper.insertUser(user);
+        try {
+            userMapper.insertUser(user);
+        } catch (DuplicateKeyException dke) {
+            log.error("用户名或手机号重复注册");
+            throw new CustomException("用户名或手机号已经被注册");
+        }
+        //删除可复用表的数据
+        stringRedisTemplate.opsForSet().remove(USER_REGISTER_REUSE_SHARDING_KEY + hashShardingIdx(username), username);
+        //添加数据到布隆过滤器
+        // 布隆过滤器设计问题：设置多大、碰撞率以及初始容量不够了怎么办？详情查看：https://nageoffer.com/12306/question
+        userRegisterCachePenetrationBloomFilter.add(username);
     }
 
     @Override
@@ -140,11 +168,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         // 修改用户状态
         oneUser.setStatus(3);
-        userService.updateUser(oneUser);
+        userService.deleteUser(oneUser.getUserId());
 
         // 清除数据
         request.getSession().removeAttribute("user");
         BaseContext.removeThreadLocal();
+        String username = user.getUsername();
+        stringRedisTemplate.opsForSet().add(USER_REGISTER_REUSE_SHARDING_KEY + hashShardingIdx(username), username);
     }
 
     @Override

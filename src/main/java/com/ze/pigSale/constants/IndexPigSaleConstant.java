@@ -15,28 +15,16 @@
  * limitations under the License.
  */
 
-package com.ze.pigSale.repository;
-
-import com.ze.pigSale.entity.EsProduct;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.elasticsearch.annotations.CompletionContext;
-import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
+package com.ze.pigSale.constants;
 
 /**
- * @author zeb
- * @Date 2023-08-07 15:31
- * 商品ES操作类
+ * 系统级公共常量
+ *
  */
-public interface EsProductRepository extends ElasticsearchRepository<EsProduct, Long> {
+public final class IndexPigSaleConstant {
 
     /**
-     * 简单搜索
-     * @param productName
-     * @param categoryName
-     * @param description
-     * @param page
-     * @return
+     * 用户注册可复用用户名分片数
      */
-    Page<EsProduct> findByProductNameOrCategoryNameOrDescription(String productName, String categoryName, String description, Pageable page);
+    public static final int USER_REGISTER_REUSE_SHARDING_COUNT = 1024;
 }

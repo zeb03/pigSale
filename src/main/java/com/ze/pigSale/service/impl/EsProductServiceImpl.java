@@ -17,14 +17,13 @@
 
 package com.ze.pigSale.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
 import com.ze.pigSale.constants.EsConstants;
 import com.ze.pigSale.entity.Category;
 import com.ze.pigSale.entity.EsProduct;
 import com.ze.pigSale.entity.Product;
-import com.ze.pigSale.repository.EsProductRepository;
+import com.ze.pigSale.service.repository.EsProductRepository;
 import com.ze.pigSale.service.CategoryService;
 import com.ze.pigSale.service.EsProductService;
 import com.ze.pigSale.service.ProductService;
@@ -32,10 +31,8 @@ import jodd.util.StringUtil;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
@@ -47,11 +44,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.completion.Completion;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.io.IOException;

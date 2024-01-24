@@ -1,7 +1,7 @@
 package com.ze.pigSale.mq;
 
 import com.ze.pigSale.constants.MQConstants;
-import com.ze.pigSale.repository.EsProductRepository;
+import com.ze.pigSale.service.repository.EsProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
