@@ -26,9 +26,9 @@ import com.ze.pigSale.anno.PermissionAnno;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
-import com.ze.pigSale.constants.ExceptionConstants;
 import com.ze.pigSale.dto.OrderMQ;
 import com.ze.pigSale.enums.PermissionEnum;
+import com.ze.pigSale.service.handler.OrderCreateChainContext;
 import com.ze.pigSale.utils.SnowFlake;
 import com.ze.pigSale.dto.OrdersDTO;
 import com.ze.pigSale.entity.*;
@@ -37,20 +37,17 @@ import com.ze.pigSale.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.ze.pigSale.constants.MqConstants.ORDER_QUEUE_NAME;
+import static com.ze.pigSale.constants.MQConstants.ORDER_QUEUE_NAME;
 import static com.ze.pigSale.constants.OrderConstants.*;
 import static com.ze.pigSale.constants.OrderConstants.ORDER_HAS_CANCEL;
 import static com.ze.pigSale.constants.RedisConstants.*;
@@ -80,14 +77,8 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
     private OrdersService ordersService;
     @Resource
     private RabbitTemplate rabbitTemplate;
-
-    private static final DefaultRedisScript<Long> ORDER_SCRIPT;
-
-    static {
-        ORDER_SCRIPT = new DefaultRedisScript<>();
-        ORDER_SCRIPT.setLocation(new ClassPathResource("order.lua"));
-        ORDER_SCRIPT.setResultType(Long.class);
-    }
+    @Resource
+    private OrderCreateChainContext<OrdersDTO> orderCreateChainContext;
 
     @Override
     public Orders getById(Long ordersId) {
@@ -128,63 +119,16 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
         return ordersDtoPageInfo;
     }
 
+    /**
+     * 该方法为购物车下单，但包含了商品超卖的情况，实际业务可以将商品秒杀单独处理
+     *
+     * @param ordersDto
+     */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void submit(OrdersDTO ordersDto) {
-        // 获取购买的商品id
-        List<Long> cartItemIds = ordersDto.getCartItemIds();
-        if (cartItemIds == null || cartItemIds.isEmpty()) {
-            throw new CustomException("请选择商品");
-        }
-
-        // 获取购物车商品
-        List<Cart> cartList = cartService.getCartListByIds(cartItemIds);
-        if (cartList == null || cartList.isEmpty()) {
-            throw new CustomException("商品不存在");
-        }
-        // 判断库存是否充足，最好使用Lua脚本(如何使用for)，保证查询和扣减一致性
-        // 创建keys，保存商品id
-        List<String> keys = new ArrayList<>(cartList.size());
-        // 创建args，保存数量
-        String[] args = new String[cartList.size() + 1];
-        // 设置keys长度
-        args[0] = String.valueOf(cartList.size());
-
-        for (int i = 0; i < cartList.size(); i++) {
-            Cart cart = cartList.get(i);
-
-            Long productId = cart.getProductId();
-            Integer quantity = cart.getQuantity();
-
-            keys.add(productId.toString());
-            args[i + 1] = quantity.toString();
-        }
-
-        // 执行lua脚本
-        Long result = stringRedisTemplate.execute(ORDER_SCRIPT, keys, args);
-
-        if (result != 0) {
-            throw new CustomException("商品id: " + result + "库存不足，请重新选择");
-        }
-
-        // for (Cart cart : cartList) {
-        // String cacheStock = stringRedisTemplate.opsForValue().get(RedisConstants.PRODUCT_STOCK_KEY + cart.getProductId());
-        // if (StringUtil.isBlank(cacheStock)) {
-        // throw new CustomException("未缓存改商品库存数据");
-        // }
-        // int stock = Integer.parseInt(cacheStock);
-        // //库存不足
-        // if (stock <= cart.getQuantity()) {
-        // throw new CustomException("购物车中商品" + cart.getProductId() + "库存不足，请重新选择");
-        // }
-        // }
-        // //减少redis库存
-        // for (Cart cart : cartList) {
-        // String cacheStock = stringRedisTemplate.opsForValue().get(RedisConstants.PRODUCT_STOCK_KEY + cart.getProductId());
-        // assert cacheStock != null;
-        // int stock = Integer.parseInt(cacheStock);
-        // stringRedisTemplate.opsForValue().set(PRODUCT_STOCK_KEY + cart.getProductId(), String.valueOf(stock - cart.getQuantity()));
-        // }
+        //责任链验证
+        orderCreateChainContext.handle(ordersDto);
 
         // 设置订单id
         SnowFlake idWorker = new SnowFlake(0, 0);
@@ -193,7 +137,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
         // 创建消息对象
         OrderMQ orderMq = new OrderMQ();
         orderMq.setOrderId(ordersDto.getId());
-        orderMq.setCartId(cartItemIds);
+        orderMq.setCartId(ordersDto.getCartItemIds());
         orderMq.setAddress(ordersDto.getAddressId());
         orderMq.setUserId(BaseContext.getCurrentId());
 

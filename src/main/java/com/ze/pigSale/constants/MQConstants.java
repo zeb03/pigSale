@@ -21,7 +21,7 @@ package com.ze.pigSale.constants;
  * @author zeb
  * @Date 2023-08-07 22:31
  */
-public class MqConstants {
+public class MQConstants {
 
     public static final String INSERT_QUEUE_NAME = "product.insert.queue";
     public static final String DELETE_QUEUE_NAME = "product.delete.queue";
@@ -29,5 +29,7 @@ public class MqConstants {
     public static final String DELETE_KEY = "product.delete";
     public static final String INSERT_KEY = "product.insert";
     public static final String ORDER_QUEUE_NAME = "order.queue";
+    public static final String CANAL_STOCK_NAME = "pigsale-canal-product-stock";
+    public static final String CANAL_CONSUMER_GROUP = "canal-group";
 
 }

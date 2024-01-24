@@ -24,6 +24,7 @@ import com.ze.pigSale.dto.OrderMQ;
 import com.ze.pigSale.entity.*;
 import com.ze.pigSale.service.*;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -32,7 +33,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.ze.pigSale.constants.MqConstants.ORDER_QUEUE_NAME;
+import static com.ze.pigSale.constants.MQConstants.ORDER_QUEUE_NAME;
 
 /**
  * @author zeb
@@ -53,6 +54,8 @@ public class OrderListener {
     private AddressService addressService;
     @Resource
     private OrdersService ordersService;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     @RabbitListener(queues = ORDER_QUEUE_NAME)
     public void orderQueueListener(String orderMqJson) {
@@ -89,6 +92,10 @@ public class OrderListener {
             if (!successFlag) {
                 throw new CustomException("商品库存不足");
             }
+
+            //TODO: 此处需要保证缓存的数据一致性，可选方案有：先改数据库再删缓存/延迟双删/Binlog
+            //此处采用binlog订阅的方式实现，具体查看canal包
+            //stringRedisTemplate.delete(PRODUCT_STOCK_KEY + productId);
 
             // 设置订单明细信息
             return getOrderDetail(orderId, item);

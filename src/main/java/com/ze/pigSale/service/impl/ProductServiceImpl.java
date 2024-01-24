@@ -26,10 +26,8 @@ import com.ze.pigSale.anno.PermissionAnno;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
-import com.ze.pigSale.constants.ExceptionConstants;
 import com.ze.pigSale.dto.OrderDetailDTO;
 import com.ze.pigSale.entity.*;
-import com.ze.pigSale.enums.PermissionEnum;
 import com.ze.pigSale.mapper.OrderDetailMapper;
 import com.ze.pigSale.mapper.ProductMapper;
 import com.ze.pigSale.service.*;
@@ -52,7 +50,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.ze.pigSale.constants.MqConstants.*;
+import static com.ze.pigSale.constants.MQConstants.*;
 import static com.ze.pigSale.constants.RedisConstants.*;
 import static com.ze.pigSale.enums.PermissionEnum.*;
 

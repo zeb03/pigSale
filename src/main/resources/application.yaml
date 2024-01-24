@@ -34,7 +34,13 @@ spring:
     username: root
     password: abc123
     virtual-host: /
-
+rocketmq:
+  name-server: 192.168.77.131:9876
+  producer:
+    group: pigsale-producerGroup
+    send-message-timeout: 2000
+    retry-times-when-send-failed: 1
+    retry-times-when-send-async-failed: 1
 
 #指定Mybatis的Mapper文件
 mybatis:
