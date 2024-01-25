@@ -112,6 +112,24 @@ public interface OrdersService extends IService<Orders> {
      */
     Integer getCountByTime(LocalDateTime start, LocalDateTime end);
 
+    /**
+     * 用户申请退款
+     * @param ordersId
+     * @param request
+     * @return
+     */
     Result<String> cancelOrders(Long ordersId, HttpServletRequest request);
 
+    /**
+     * 订单超时关闭
+     * @param ordersDTO
+     * @return
+     */
+    boolean closeOrders(OrdersDTO ordersDTO);
+
+    /**
+     * 用户支付
+     * @param orders
+     */
+    void pay(Orders orders);
 }

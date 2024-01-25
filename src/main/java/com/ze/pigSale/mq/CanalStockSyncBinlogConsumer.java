@@ -42,7 +42,7 @@ import java.util.Objects;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RocketMQMessageListener(topic = MQConstants.CANAL_STOCK_NAME, consumerGroup = MQConstants.CANAL_CON_GROUP)
+@RocketMQMessageListener(topic = MQConstants.CANAL_STOCK_TOPIC_KEY, consumerGroup = MQConstants.CANAL_STOCK_CON_GROUP)
 public class CanalStockSyncBinlogConsumer implements RocketMQListener<CanalBinlogEvent> {
 
     @Autowired

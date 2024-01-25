@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RocketMQMessageListener(topic = MQConstants.PRODUCT_NAME, selectorExpression = MQConstants.DELETE, consumerGroup = MQConstants.PRODUCT_CON_GROUP)
+@RocketMQMessageListener(topic = MQConstants.PRODUCT_ES_SYNC_TOPIC_KEY, selectorExpression = MQConstants.DELETE, consumerGroup = MQConstants.PRODUCT_ES_SYNC_CON_GROUP)
 public class EsProductDeleteListener implements RocketMQListener<Long> {
     @Autowired
     private EsProductRepository esProductRepository;

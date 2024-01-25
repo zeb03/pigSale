@@ -126,13 +126,13 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 
         // 将消息发布到队列，同步到es
 //        rabbitTemplate.convertAndSend(EXCHANGE_NAME, INSERT_KEY, product.getProductId());
-        SendResult sendResult = rocketMQTemplate.syncSend(PRODUCT_NAME + ":" + INSERT, MessageBuilder.withPayload(product.getProductId()).build());
+        SendResult sendResult = rocketMQTemplate.syncSend(PRODUCT_ES_SYNC_TOPIC_KEY + ":" + INSERT, MessageBuilder.withPayload(product.getProductId()).build());
         log.info("【sendMsg】sendResult={}", JSON.toJSONString(sendResult));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @PermissionAnno(value = EDIT_PRODUCT)
+//    @PermissionAnno(value = EDIT_PRODUCT)
     public void updateProduct(Product product) {
 
         product.setUpdateTime(LocalDateTime.now());
@@ -157,7 +157,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         }
         // 将消息发布到队列，同步到es
 //        rabbitTemplate.convertAndSend(EXCHANGE_NAME, INSERT_KEY, product.getProductId());
-        SendResult sendResult = rocketMQTemplate.syncSend(PRODUCT_NAME + ":" + INSERT, MessageBuilder.withPayload(product.getProductId()).build());
+        SendResult sendResult = rocketMQTemplate.syncSend(PRODUCT_ES_SYNC_TOPIC_KEY + ":" + INSERT, MessageBuilder.withPayload(product.getProductId()).build());
     }
 
     private void sendMessage(Long productId) {
@@ -185,7 +185,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         stringRedisTemplate.delete(CACHE_SHOP_KEY + productId);
         // 将消息发布到队列，同步到es
 //        rabbitTemplate.convertAndSend(EXCHANGE_NAME, DELETE_KEY, productId);
-        SendResult sendResult = rocketMQTemplate.syncSend(PRODUCT_NAME + ":" + DELETE, MessageBuilder.withPayload(productId).build());
+        SendResult sendResult = rocketMQTemplate.syncSend(PRODUCT_ES_SYNC_TOPIC_KEY + ":" + DELETE, MessageBuilder.withPayload(productId).build());
     }
 
     @Override

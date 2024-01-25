@@ -35,7 +35,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.ze.pigSale.constants.MQConstants.ORDER_NAME;
+import static com.ze.pigSale.constants.MQConstants.ORDER_ASYNC_SUBMIT_TOPIC_KEY;
 
 /**
  * @author zeb
@@ -44,7 +44,7 @@ import static com.ze.pigSale.constants.MQConstants.ORDER_NAME;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RocketMQMessageListener(topic = ORDER_NAME, consumerGroup = MQConstants.ORDER_CON_GROUP)
+@RocketMQMessageListener(topic = ORDER_ASYNC_SUBMIT_TOPIC_KEY, consumerGroup = MQConstants.ORDER_CON_GROUP)
 public class OrderListener implements RocketMQListener<OrderMQ> {
 
     @Resource
@@ -113,9 +113,10 @@ public class OrderListener implements RocketMQListener<OrderMQ> {
         for (Cart cart : cartList) {
             amount = amount.add(cart.getAmount().multiply(new BigDecimal(cart.getQuantity())));
         }
-        Orders orders = setOrdersInfo(userId, addressId, amount);
+        Orders orders = setOrdersInfo(orderId, userId, addressId, amount);
 
         // 保存订单
+        log.info("[保存订单]:{}", orders);
         ordersService.save(orders);
 
         // 清空购物车
@@ -131,21 +132,21 @@ public class OrderListener implements RocketMQListener<OrderMQ> {
         return orderDetail;
     }
 
-    private Orders setOrdersInfo(Long userId, Long addressId, BigDecimal amount) {
+    private Orders setOrdersInfo(Long orderId, Long userId, Long addressId, BigDecimal amount) {
         // 获取用户信息
         User user = userService.getUserById(userId);
         // 获取地址信息
         Address address = addressService.getAddressById(addressId);
         // 创建订单对象
         Orders order = new Orders();
-
+        order.setId(orderId);
         // 设置时间
         order.setCreateTime(LocalDateTime.now());
         order.setCheckoutTime(LocalDateTime.now());
         // 设置支付方式
         order.setPayMethod(1);
         // 设置订单状态
-        order.setStatus(2);
+        order.setStatus(1);
         // 设置总金额
         order.setTotalPrice(new BigDecimal(String.valueOf(amount)));
         // 设置用户id

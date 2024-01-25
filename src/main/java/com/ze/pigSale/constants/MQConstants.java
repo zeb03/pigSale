@@ -26,13 +26,16 @@ public class MQConstants {
     public static final String DELETE = "delete";
     public static final String INSERT = "insert";
 
-    public static final String PRODUCT_NAME = "product_topic";
-    public static final String PRODUCT_CON_GROUP = "product_con_group";
+    public static final String PRODUCT_ES_SYNC_TOPIC_KEY = "pigsale_product-service_sync-product_topic";
+    public static final String PRODUCT_ES_SYNC_CON_GROUP = "pigsale_product-service_sync-product_con_group";
 
-    public static final String CANAL_STOCK_NAME = "canal_product_stock";
-    public static final String CANAL_CON_GROUP = "canal_group";
+    public static final String CANAL_STOCK_TOPIC_KEY = "pigsale_order-service_canal_product_stock";
+    public static final String CANAL_STOCK_CON_GROUP = "pigsale_order-service_canal_group";
 
-    public static final String ORDER_NAME = "order_queue";
-    public static final String ORDER_CON_GROUP = "order_con_group";
+    public static final String ORDER_ASYNC_SUBMIT_TOPIC_KEY = "pigsale_order-service_submit-order_topic";
+    public static final String ORDER_CON_GROUP = "pigsale_order-service_order_con_group";
+
+    public static final String ORDER_DELAY_CLOSE_TOPIC_KEY = "pigsale_order-service_delay-close-order_topic";
+    public static final String TICKET_DELAY_CLOSE_CG_KEY = "pigsale_order-service_delay-close-order_con_group";
 
 }

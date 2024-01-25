@@ -112,7 +112,7 @@ public class OrdersController {
     }
 
     /**
-     * 取消订单或退款
+     * 退款
      *
      * @param ordersId
      * @param request
@@ -146,5 +146,17 @@ public class OrdersController {
     public Result<String> disagree(@RequestBody Orders orders, HttpServletRequest request) {
         ordersService.disagree(orders, request);
         return Result.success("已拒绝退款");
+    }
+
+    /**
+     * 用户支付订单
+     *
+     * @param orders
+     * @return
+     */
+    @PutMapping("/pay")
+    public Result<String> pay(@RequestBody Orders orders) {
+        ordersService.pay(orders);
+        return Result.success("支付成功");
     }
 }

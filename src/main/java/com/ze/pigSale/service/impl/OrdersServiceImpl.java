@@ -17,6 +17,7 @@
 
 package com.ze.pigSale.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -26,8 +27,10 @@ import com.ze.pigSale.anno.PermissionAnno;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
+import com.ze.pigSale.constants.OrderConstants;
 import com.ze.pigSale.dto.OrderMQ;
 import com.ze.pigSale.enums.PermissionEnum;
+import com.ze.pigSale.mq.producer.DelayCloseOrderSendProduce;
 import com.ze.pigSale.service.handler.OrderCreateChainContext;
 import com.ze.pigSale.utils.SnowFlake;
 import com.ze.pigSale.dto.OrdersDTO;
@@ -48,9 +51,10 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.ze.pigSale.constants.MQConstants.ORDER_NAME;
+import static com.ze.pigSale.constants.MQConstants.ORDER_ASYNC_SUBMIT_TOPIC_KEY;
 import static com.ze.pigSale.constants.OrderConstants.*;
 import static com.ze.pigSale.constants.OrderConstants.ORDER_HAS_CANCEL;
 import static com.ze.pigSale.constants.RedisConstants.*;
@@ -82,6 +86,8 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
     private OrderCreateChainContext<OrdersDTO> orderCreateChainContext;
     @Resource
     private RocketMQTemplate rocketMQTemplate;
+    @Resource
+    private DelayCloseOrderSendProduce delayCloseOrderSendProduce;
 
     @Override
     public Orders getById(Long ordersId) {
@@ -144,14 +150,16 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
         orderMq.setAddress(ordersDto.getAddressId());
         orderMq.setUserId(BaseContext.getCurrentId());
 
-        // 发送订单号、商品列表、用户号到消息队列
+        // 发送订单号、商品列表、用户号到消息队列，异步处理解耦，缩短业务链
         // rabbitTemplate.convertAndSend(ORDER_QUEUE_NAME, JSONUtil.toJsonStr(orderMq));
-        rocketMQTemplate.asyncSend(ORDER_NAME, MessageBuilder.withPayload(orderMq).build(), new SendCallback() {
+        rocketMQTemplate.asyncSend(ORDER_ASYNC_SUBMIT_TOPIC_KEY, MessageBuilder.withPayload(orderMq).build(), new SendCallback() {
 
             @Override
             public void onSuccess(SendResult sendResult) {
                 // 处理消息发送成功逻辑
                 log.info("订单消息发送成功");
+                //实现订单延迟10分钟关闭
+                delayCloseOrderSendProduce.sendDelayMsg(ordersDto, 14);
             }
 
             @Override
@@ -196,9 +204,8 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
     }
 
     @Override
-    @PermissionAnno(value = PermissionEnum.EDIT_ORDER)
+//    @PermissionAnno(value = PermissionEnum.EDIT_ORDER)
     public void updateStatus(Orders orders) {
-
         // 根据id获取此订单
         Orders oneOrders = ordersMapper.getById(orders.getId());
         if (oneOrders == null) {
@@ -211,6 +218,8 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
 
         // 根据id修改订单
         ordersMapper.updateById(oneOrders);
+
+        log.info("用户修改订单状态为{}", orders.getStatus());
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -251,15 +260,15 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    @PermissionAnno(value = CANCEL_ORDER)
+//    @PermissionAnno(value = CANCEL_ORDER)
     public void agree(Orders orders) {
 
         Orders oneOrders = this.getById(orders.getId());
-        if (oneOrders == null) {
+        if (BeanUtil.isEmpty(oneOrders)) {
             throw new CustomException("订单id错误");
         }
 
-        oneOrders.setStatus(6);
+        oneOrders.setStatus(ORDER_HAS_CANCEL);
         this.updateById(oneOrders);
 
         // 增加产品库存
@@ -270,6 +279,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
             Product product = productService.getProductById(productId);
             product.setStock(product.getStock() + quantity);
             productService.updateProduct(product);
+            //缓存更新，使用canal订阅数据库
             return null;
         }).collect(Collectors.toList());
     }
@@ -304,6 +314,13 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
         return ordersMapper.getCountByTime(start, end);
     }
 
+    /**
+     * 申请退款
+     *
+     * @param ordersId
+     * @param request
+     * @return
+     */
     @Override
     public Result<String> cancelOrders(Long ordersId, HttpServletRequest request) {
         // 获取此订单
@@ -340,6 +357,34 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
         // TODO:超时未处理则复原订单状态：https://blog.csdn.net/Anenan/article/details/126368753
 
         return Result.success("等待管理员同意");
+    }
+
+    @Override
+    public boolean closeOrders(OrdersDTO ordersDTO) {
+        Long ordersId = ordersDTO.getId();
+        log.info("[关闭订单]ordersId:{}", ordersId);
+        //这里要查看最新状态
+        Orders orders = ordersService.getById(ordersId);
+        if (BeanUtil.isEmpty(orders)) {
+            throw new CustomException("订单无法获取");
+        }
+        //如果状态是未支付，则关闭订单，否则返回false
+        if (!Objects.equals(orders.getStatus(), ORDER_NOT_PAY)) {
+            return false;
+        }
+
+        //设置订单状态
+        //恢复商品库存
+        agree(orders);
+        log.info("关闭订单成功");
+        return true;
+    }
+
+    @Override
+    public void pay(Orders orders) {
+        // TODO: 测试使用
+        orders.setStatus(2);
+        ordersService.updateStatus(orders);
     }
 
     /**
