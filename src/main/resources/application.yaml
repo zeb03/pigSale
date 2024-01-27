@@ -7,6 +7,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/shopping_pig?serverTimezone=UTC&zeroDateTimeBehavior=CONVERT_TO_NULL
+#    driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
+#    url: jdbc:shardingsphere:classpath:shardingsphere-config.yaml
     username: root
     password: abc123
   redis:

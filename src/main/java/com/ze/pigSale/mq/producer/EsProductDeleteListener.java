@@ -1,4 +1,4 @@
-package com.ze.pigSale.mq;
+package com.ze.pigSale.mq.producer;
 
 import com.ze.pigSale.constants.MQConstants;
 import com.ze.pigSale.service.repository.EsProductRepository;
@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @RocketMQMessageListener(topic = MQConstants.PRODUCT_ES_SYNC_TOPIC_KEY, selectorExpression = MQConstants.DELETE, consumerGroup = MQConstants.PRODUCT_ES_SYNC_CON_GROUP)
 public class EsProductDeleteListener implements RocketMQListener<Long> {
+
     @Autowired
     private EsProductRepository esProductRepository;
 

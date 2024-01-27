@@ -18,7 +18,6 @@
 package com.ze.pigSale.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageInfo;
@@ -27,7 +26,6 @@ import com.ze.pigSale.anno.PermissionAnno;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.common.Result;
-import com.ze.pigSale.constants.OrderConstants;
 import com.ze.pigSale.dto.OrderMQ;
 import com.ze.pigSale.enums.PermissionEnum;
 import com.ze.pigSale.mq.producer.DelayCloseOrderSendProduce;
@@ -55,8 +53,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.ze.pigSale.constants.MQConstants.ORDER_ASYNC_SUBMIT_TOPIC_KEY;
-import static com.ze.pigSale.constants.OrderConstants.*;
-import static com.ze.pigSale.constants.OrderConstants.ORDER_HAS_CANCEL;
+import static com.ze.pigSale.constants.OrderStatusConstants.*;
+import static com.ze.pigSale.constants.OrderStatusConstants.ORDER_HAS_CANCEL;
 import static com.ze.pigSale.constants.RedisConstants.*;
 import static com.ze.pigSale.enums.PermissionEnum.CANCEL_ORDER;
 

@@ -21,9 +21,29 @@ package com.ze.pigSale.constants;
  * @author zeb
  * @Date 2023-07-29 13:36
  */
-public class OrderConstants {
-
+public class OrderStatusConstants {
+    /**
+     * 订单未支付
+     */
     public static final Integer ORDER_NOT_PAY = 1;
-    public static final Integer ORDER_HAS_CANCEL = 6;
+    /**
+     * 订单已支付，待发货
+     */
+    public static final Integer ORDER_HAD_PAY = 2;
+    /**
+     * 订单已发货
+     */
+    public static final Integer ORDER_HAD_SEND = 3;
+    /**
+     * 订单已到达
+     */
+    public static final Integer ORDER_HAD_ARRIVAL = 4;
+    /**
+     * 订单申请退款
+     */
     public static final Integer ORDER_APPLY_CANCEL = 5;
+    /**
+     * 订单已经退款、关闭
+     */
+    public static final Integer ORDER_HAS_CANCEL = 6;
 }

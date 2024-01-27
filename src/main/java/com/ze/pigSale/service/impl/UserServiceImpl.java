@@ -25,7 +25,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
-import com.google.protobuf.ServiceException;
 import com.ze.pigSale.anno.PermissionAnno;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.CustomException;
@@ -43,9 +42,9 @@ import com.ze.pigSale.service.ProductService;
 import com.ze.pigSale.service.UserPermissionService;
 import com.ze.pigSale.service.UserService;
 import com.ze.pigSale.utils.RegexUtils;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -69,12 +68,11 @@ import static com.ze.pigSale.utils.UserReuseUtil.hashShardingIdx;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     @Resource
     private UserMapper userMapper;
-    @Resource
+    @Autowired
     private UserPermissionService userPermissionService;
     @Resource
     private UserService userService;
@@ -86,6 +84,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private OrdersService ordersService;
     @Resource
     private final RBloomFilter<String> userRegisterCachePenetrationBloomFilter;
+
+    public UserServiceImpl(RBloomFilter<String> userRegisterCachePenetrationBloomFilter) {
+        this.userRegisterCachePenetrationBloomFilter = userRegisterCachePenetrationBloomFilter;
+    }
 
     @Override
     public User getUserById(Long id) {

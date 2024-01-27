@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.ze.pigSale.mq;
+package com.ze.pigSale.mq.producer;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ze.pigSale.common.CustomException;

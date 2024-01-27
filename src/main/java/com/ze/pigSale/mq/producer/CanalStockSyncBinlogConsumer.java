@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.ze.pigSale.mq;
+package com.ze.pigSale.mq.producer;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;

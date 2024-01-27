@@ -26,16 +26,44 @@ public class MQConstants {
     public static final String DELETE = "delete";
     public static final String INSERT = "insert";
 
+    /**
+     * ES数据一致性TOPIC
+     */
     public static final String PRODUCT_ES_SYNC_TOPIC_KEY = "pigsale_product-service_sync-product_topic";
+
+    /**
+     * ES数据一致性消费者组
+     */
     public static final String PRODUCT_ES_SYNC_CON_GROUP = "pigsale_product-service_sync-product_con_group";
 
+    /**
+     * Canal订阅binlog的TOPIC
+     */
     public static final String CANAL_STOCK_TOPIC_KEY = "pigsale_order-service_canal_product_stock";
+
+    /**
+     * Canal订阅binlog的消费者组
+     */
     public static final String CANAL_STOCK_CON_GROUP = "pigsale_order-service_canal_group";
 
+    /**
+     * 订单异步提交TOPIC
+     */
     public static final String ORDER_ASYNC_SUBMIT_TOPIC_KEY = "pigsale_order-service_submit-order_topic";
+
+    /**
+     * 订单异步提交消费者组
+     */
     public static final String ORDER_CON_GROUP = "pigsale_order-service_order_con_group";
 
+    /**
+     * 订单延迟关闭TOPIC
+     */
     public static final String ORDER_DELAY_CLOSE_TOPIC_KEY = "pigsale_order-service_delay-close-order_topic";
+
+    /**
+     * 订单延迟关闭消费者组
+     */
     public static final String TICKET_DELAY_CLOSE_CG_KEY = "pigsale_order-service_delay-close-order_con_group";
 
 }
