@@ -18,6 +18,7 @@
 package com.ze.pigSale;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.github.pagehelper.PageInfo;
 import com.ze.pigSale.entity.Category;
 import com.ze.pigSale.entity.Product;
 import com.ze.pigSale.entity.Review;
@@ -42,6 +43,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.ze.pigSale.constants.RedisConstants.CACHE_SHOP_KEY;
 import static com.ze.pigSale.constants.RedisConstants.PRODUCT_STOCK_KEY;
@@ -141,5 +143,15 @@ class PigSaleApplicationTests {
 
     @Test
     void testScan() {
+    }
+
+    @Test
+    void cleaningUser() {
+        PageInfo<User> userPage = userService.getUserPage(1, 100, 1, "");
+        List<User> list = userPage.getList();
+        list.stream().map(item -> {
+            userService.updateUser(item);
+            return null;
+        }).collect(Collectors.toList());
     }
 }

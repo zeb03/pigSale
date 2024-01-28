@@ -106,7 +106,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 设置初始状态
         user.setRole(0);
         user.setStatus(1);
-        user.setImage("avatar.webp");
+        user.setImage("avatar.jpg");
         // 使用布隆过滤器防止缓存穿透
         String username = user.getUsername();
         boolean hasUserName = userRegisterCachePenetrationBloomFilter.contains(username);
@@ -123,7 +123,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 //        if (userResult != null) {
 //            throw new CustomException("用户名或手机号已被注册！");
 //        }
-        user.setPassword(DigestUtils.md5DigestAsHex(user.getPassword().getBytes()));
+//        user.setPassword(DigestUtils.md5DigestAsHex(user.getPassword().getBytes()));
         try {
             userMapper.insertUser(user);
         } catch (DuplicateKeyException dke) {
@@ -138,7 +138,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    @PermissionAnno(value = PermissionEnum.VIEW_USER)
+//    @PermissionAnno(value = PermissionEnum.VIEW_USER)
     public PageInfo<User> getUserPage(Integer currentPage, Integer pageSize, Integer role, String search) {
         PageMethod.startPage(currentPage, pageSize);
         List<User> userList = null;
@@ -151,7 +151,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    @PermissionAnno(value = EDIT_USER)
+//    @PermissionAnno(value = EDIT_USER)
     public void updateUser(User user) {
         if (user.getPassword() == null || "".equals(user.getPassword())) {
             userMapper.updateUser(user);

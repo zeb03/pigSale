@@ -5,10 +5,10 @@ spring:
   application:
     name: pigSale
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/shopping_pig?serverTimezone=UTC&zeroDateTimeBehavior=CONVERT_TO_NULL
-#    driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
-#    url: jdbc:shardingsphere:classpath:shardingsphere-config.yaml
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://localhost:3306/shopping_pig?serverTimezone=UTC&zeroDateTimeBehavior=CONVERT_TO_NULL
+    driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
+    url: jdbc:shardingsphere:classpath:shardingsphere-config.yaml
     username: root
     password: abc123
   redis:
@@ -37,6 +37,9 @@ rocketmq:
     send-message-timeout: 2000
     retry-times-when-send-failed: 1
     retry-times-when-send-async-failed: 1
+
+pagehelper:
+  helper-dialect=mysql:
 
 framework:
   fastjson:

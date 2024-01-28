@@ -65,6 +65,7 @@ public class UserController {
 
     /**
      * 查询用户收件箱
+     *
      * @return
      */
     @GetMapping("/msg/box")
@@ -74,6 +75,7 @@ public class UserController {
 
     /**
      * 用户反馈
+     *
      * @param feedBackDTO
      * @return
      */
@@ -144,6 +146,7 @@ public class UserController {
     /**
      * 添加管理员
      * 待完善，可以给管理员各种权限
+     *
      * @param user
      * @return
      */
@@ -223,4 +226,15 @@ public class UserController {
         return Result.success("删除成功");
     }
 
+//    @GetMapping("/clean")
+//    public Result<String> cleanUser() {
+//        PageInfo<User> userPage = userService.getUserPage(1, 100, 0, "");
+//        List<User> list = userPage.getList();
+//        list.stream().map(item -> {
+//            item.setPassword(null);
+//            userService.updateUser(item);
+//            return null;
+//        }).collect(Collectors.toList());
+//        return Result.success("清洗成功");
+//    }
 }

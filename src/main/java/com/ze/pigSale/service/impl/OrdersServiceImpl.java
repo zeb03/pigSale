@@ -364,8 +364,10 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
         //这里要查看最新状态
         Orders orders = ordersService.getById(ordersId);
         if (BeanUtil.isEmpty(orders)) {
+            log.info("订单号:{}", ordersId);
             throw new CustomException("订单无法获取");
         }
+
         //如果状态是未支付，则关闭订单，否则返回false
         if (!Objects.equals(orders.getStatus(), ORDER_NOT_PAY)) {
             return false;
