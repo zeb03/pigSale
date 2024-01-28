@@ -19,6 +19,7 @@ package com.ze.pigSale.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import com.ze.pigSale.anno.PermissionAnno;
 import com.ze.pigSale.common.BaseContext;
 import com.ze.pigSale.common.Result;
 import com.ze.pigSale.vo.ProductVo;
@@ -38,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.ze.pigSale.enums.PermissionEnum.*;
 
 /**
  * @author: zebii
@@ -103,6 +106,7 @@ public class ProductController {
      * @param product
      */
     @PostMapping
+    @PermissionAnno(value = ADD_PRODUCT)
     public Result<Product> add(@RequestBody Product product) {
         productService.insertProduct(product);
         return Result.success(product);
@@ -114,6 +118,7 @@ public class ProductController {
      * @param product
      */
     @PutMapping
+    @PermissionAnno(value = EDIT_PRODUCT)
     public Result<Product> edit(@RequestBody Product product) {
         productService.updateProduct(product);
         return Result.success(product);
@@ -125,6 +130,7 @@ public class ProductController {
      * @param productId
      */
     @DeleteMapping("/{productId}")
+    @PermissionAnno(value = DELETE_PRODUCT)
     public Result<String> delete(@PathVariable("productId") Long productId) {
         productService.deleteProduct(productId);
         return Result.success("删除成功");
@@ -134,6 +140,7 @@ public class ProductController {
      * 获取最近销量
      */
     @GetMapping("/salesRank")
+    @PermissionAnno(value = VIEW_DATA)
     public Result<SalesVO> getSalesRank(Integer month) {
 
         Map<String, Integer> salesRank = productService.getSalesRank(month);
@@ -152,6 +159,7 @@ public class ProductController {
      * 获取最近收益
      */
     @GetMapping("/benefit/all")
+    @PermissionAnno(value = VIEW_DATA)
     public Result<Map<String, BigDecimal>> getAllBenefit(Integer month) {
         Map<String, BigDecimal> benefit = productService.getAllBenefit(month);
         return Result.success(benefit);
@@ -161,6 +169,7 @@ public class ProductController {
      * 获取最近一年总收益
      */
     @GetMapping("/benefit")
+    @PermissionAnno(value = VIEW_DATA)
     public Result<List<BigDecimal>> getBenefit() {
         List<BigDecimal> benefit = productService.getBenefit();
         return Result.success(benefit);
@@ -170,6 +179,7 @@ public class ProductController {
      * 获取指定时间内订单成交量
      */
     @GetMapping("/thisYearOrders")
+    @PermissionAnno(value = VIEW_DATA)
     public Result<List<Integer>> getOrderCount() {
         List<Integer> orderCount = productService.getOrderCount();
         return Result.success(orderCount);

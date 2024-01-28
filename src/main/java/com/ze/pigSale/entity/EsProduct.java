@@ -21,7 +21,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
-import org.springframework.data.elasticsearch.core.suggest.Completion;
+import org.springframework.data.elasticsearch.core.completion.Completion;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

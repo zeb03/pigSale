@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.ze.pigSale.mq.producer;
+package com.ze.pigSale.mq.comsumer;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ze.pigSale.common.CustomException;
@@ -103,6 +103,9 @@ public class OrderListener implements RocketMQListener<OrderMQ> {
             // 设置订单明细信息
             return getOrderDetail(orderId, item);
         }).collect(Collectors.toList());
+
+        log.info("orderDetail: " + orderDetails);
+        log.info("cartList: " + cartList);
 
         // 保存订单明细
         ordersDetailService.saveBatch(orderDetails);

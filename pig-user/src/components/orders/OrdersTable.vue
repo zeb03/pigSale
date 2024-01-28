@@ -7,7 +7,7 @@
             </el-table-column>
             <el-table-column align="center" label="实付金额" width="130">
                 <template slot-scope="{ row }">
-                    ￥{{ row.orderDetails[0].price.toFixed(2) }}
+                    ￥{{ row.totalPrice }}
                 </template>
             </el-table-column>
             <el-table-column align="center" label="订单状态" width="140">

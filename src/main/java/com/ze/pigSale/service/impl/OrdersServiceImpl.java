@@ -258,7 +258,6 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-//    @PermissionAnno(value = CANCEL_ORDER)
     public void agree(Orders orders) {
 
         Orders oneOrders = this.getById(orders.getId());

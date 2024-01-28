@@ -18,6 +18,7 @@
 package com.ze.pigSale.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.ze.pigSale.anno.PermissionAnno;
 import com.ze.pigSale.common.Result;
 import com.ze.pigSale.dto.OrdersDTO;
 import com.ze.pigSale.dto.TimeDTO;
@@ -30,6 +31,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import java.time.LocalDateTime;
+
+import static com.ze.pigSale.enums.PermissionEnum.CANCEL_ORDER;
 
 /**
  * author: zebii
@@ -130,6 +133,7 @@ public class OrdersController {
      * @return
      */
     @PutMapping("/handle/agree")
+    @PermissionAnno(value = CANCEL_ORDER)
     public Result<String> agree(@RequestBody Orders orders) {
         ordersService.agree(orders);
         return Result.success("已同意退款");

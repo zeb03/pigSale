@@ -1,4 +1,4 @@
-package com.ze.pigSale.mq.producer;
+package com.ze.pigSale.mq.comsumer;
 
 import com.ze.pigSale.constants.MQConstants;
 import com.ze.pigSale.service.repository.EsProductRepository;

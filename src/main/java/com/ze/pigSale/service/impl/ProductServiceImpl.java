@@ -114,7 +114,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
-    @PermissionAnno(value = ADD_PRODUCT)
     public void insertProduct(Product product) {
 
         // 设置时间
@@ -132,7 +131,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-//    @PermissionAnno(value = EDIT_PRODUCT)
     public void updateProduct(Product product) {
 
         product.setUpdateTime(LocalDateTime.now());
@@ -178,7 +176,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
-    @PermissionAnno(value = DELETE_PRODUCT)
     public void deleteProduct(Long productId) {
         productMapper.deleteProduct(productId);
         // 删除redis缓存
@@ -189,7 +186,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
-    @PermissionAnno(value = VIEW_DATA)
     public Map<String, Integer> getSalesRank(Integer month) {
 
         LocalDateTime now = LocalDateTime.now();
@@ -225,9 +221,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
-    @PermissionAnno(value = VIEW_DATA)
     public Map<String, BigDecimal> getAllBenefit(Integer month) {
-
         if (month == null) {
             throw new CustomException("参数为空");
         }
@@ -261,7 +255,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
-    @PermissionAnno(value = VIEW_DATA)
     public List<BigDecimal> getBenefit() {
 
         // 获取当前年份
@@ -290,7 +283,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
-    @PermissionAnno(value = VIEW_DATA)
     public List<Integer> getOrderCount() {
 
         // 获取当前年份
