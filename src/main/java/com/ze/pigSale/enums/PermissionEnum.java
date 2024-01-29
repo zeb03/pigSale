@@ -48,16 +48,17 @@ public enum PermissionEnum {
      * 权限id
      */
     @EnumValue
-    private Integer permissionId;
+    private final Integer permissionId;
 
     /**
      * 权限名称
      */
     @JsonValue
-    private String permissionName;
+    private final String permissionName;
 
     PermissionEnum(Integer id, String name) {
         this.permissionId = id;
         this.permissionName = name;
     }
+
 }
