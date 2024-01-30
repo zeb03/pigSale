@@ -15,21 +15,42 @@
  * limitations under the License.
  */
 
-package com.ze.pigSale.constants;
+package com.ze.pigSale.service.handler.idempotent;
+
+
+import com.ze.pigSale.anno.Idempotent;
+import com.ze.pigSale.enums.IdempotentTypeEnum;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
+import org.aspectj.lang.ProceedingJoinPoint;
 
 /**
- * 系统级公共常量
+ * 幂等参数包装
  *
+ * @公众号：马丁玩编程，回复：加群，添加马哥微信（备注：12306）获取项目资料
  */
-public final class IndexPigSaleConstant {
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Accessors(chain = true)
+public final class IdempotentParamWrapper {
 
     /**
-     * 用户注册可复用用户名分片数
+     * 幂等注解
      */
-    public static final int USER_REGISTER_REUSE_SHARDING_COUNT = 1024;
+    private Idempotent idempotent;
 
     /**
-     * 商品表名称
+     * AOP 处理连接点
      */
-    public static final String SALE_PRODUCT_TABLE_NAME = "product";
+    private ProceedingJoinPoint joinPoint;
+
+    /**
+     * 锁标识，{@link IdempotentTypeEnum#PARAM}
+     */
+    private String lockKey;
 }

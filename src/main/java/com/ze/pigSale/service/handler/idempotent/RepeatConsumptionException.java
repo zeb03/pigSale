@@ -15,21 +15,25 @@
  * limitations under the License.
  */
 
-package com.ze.pigSale.constants;
+package com.ze.pigSale.service.handler.idempotent;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
- * 系统级公共常量
+ * 重复消费异常
  *
  */
-public final class IndexPigSaleConstant {
-
+@RequiredArgsConstructor
+public class RepeatConsumptionException extends RuntimeException {
+    
     /**
-     * 用户注册可复用用户名分片数
+     * 错误标识
+     * <p>
+     * 触发幂等逻辑时可能有两种情况：
+     * 1. 消息还在处理，但是不确定是否执行成功，那么需要返回错误，方便 RocketMQ 再次通过重试队列投递
+     * 2. 消息处理成功了，该消息直接返回成功即可
      */
-    public static final int USER_REGISTER_REUSE_SHARDING_COUNT = 1024;
-
-    /**
-     * 商品表名称
-     */
-    public static final String SALE_PRODUCT_TABLE_NAME = "product";
+    @Getter
+    private final Boolean error;
 }

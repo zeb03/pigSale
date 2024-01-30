@@ -15,21 +15,44 @@
  * limitations under the License.
  */
 
-package com.ze.pigSale.constants;
+package com.ze.pigSale.service.handler.idempotent;
+
+
+import com.ze.pigSale.anno.Idempotent;
+import org.aspectj.lang.ProceedingJoinPoint;
 
 /**
- * 系统级公共常量
+ * 幂等执行处理器
  *
  */
-public final class IndexPigSaleConstant {
+public interface IdempotentExecuteHandler {
 
     /**
-     * 用户注册可复用用户名分片数
+     * 幂等处理逻辑
+     *
+     * @param wrapper 幂等参数包装器
      */
-    public static final int USER_REGISTER_REUSE_SHARDING_COUNT = 1024;
+    void handler(IdempotentParamWrapper wrapper);
 
     /**
-     * 商品表名称
+     * 执行幂等处理逻辑
+     *
+     * @param joinPoint  AOP 方法处理
+     * @param idempotent 幂等注解
      */
-    public static final String SALE_PRODUCT_TABLE_NAME = "product";
+    void execute(ProceedingJoinPoint joinPoint, Idempotent idempotent);
+
+    /**
+     * 异常流程处理
+     */
+    default void exceptionProcessing() {
+
+    }
+
+    /**
+     * 后置处理
+     */
+    default void postProcessing() {
+
+    }
 }

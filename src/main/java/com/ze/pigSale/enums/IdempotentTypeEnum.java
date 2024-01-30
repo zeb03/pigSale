@@ -15,21 +15,27 @@
  * limitations under the License.
  */
 
-package com.ze.pigSale.constants;
+package com.ze.pigSale.enums;
 
 /**
- * 系统级公共常量
+ * 幂等验证类型枚举
  *
+ * @公众号：马丁玩编程，回复：加群，添加马哥微信（备注：12306）获取项目资料
  */
-public final class IndexPigSaleConstant {
-
+public enum IdempotentTypeEnum {
+    
     /**
-     * 用户注册可复用用户名分片数
+     * 基于 Token 方式验证
      */
-    public static final int USER_REGISTER_REUSE_SHARDING_COUNT = 1024;
-
+    TOKEN,
+    
     /**
-     * 商品表名称
+     * 基于方法参数方式验证
      */
-    public static final String SALE_PRODUCT_TABLE_NAME = "product";
+    PARAM,
+    
+    /**
+     * 基于 SpEL 表达式方式验证
+     */
+    SPEL
 }

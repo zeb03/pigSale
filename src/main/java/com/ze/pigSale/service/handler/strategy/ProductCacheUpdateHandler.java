@@ -2,6 +2,7 @@ package com.ze.pigSale.service.handler.strategy;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.ze.pigSale.constants.IndexPigSaleConstant;
 import com.ze.pigSale.constants.RedisConstants;
 import com.ze.pigSale.dto.CanalBinlogEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,7 @@ import java.util.Map;
  * @Date 2024-01-29 23:08
  */
 @Component
-public class ProductCacheUpdateHandler implements CacheUpdateHandler{
+public class ProductCacheUpdateHandler implements CacheUpdateHandler {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
@@ -47,6 +48,6 @@ public class ProductCacheUpdateHandler implements CacheUpdateHandler{
 
     @Override
     public String mark() {
-        return "product";
+        return IndexPigSaleConstant.SALE_PRODUCT_TABLE_NAME;
     }
 }

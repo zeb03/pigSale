@@ -18,16 +18,20 @@
 package com.ze.pigSale.mq.comsumer;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.ze.pigSale.anno.Idempotent;
 import com.ze.pigSale.common.CustomException;
 import com.ze.pigSale.constants.MQConstants;
 import com.ze.pigSale.dto.OrderMQ;
 import com.ze.pigSale.entity.*;
+import com.ze.pigSale.enums.IdempotentSceneEnum;
+import com.ze.pigSale.enums.IdempotentTypeEnum;
 import com.ze.pigSale.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -45,7 +49,7 @@ import static com.ze.pigSale.constants.MQConstants.ORDER_ASYNC_SUBMIT_TOPIC_KEY;
 @Component
 @RequiredArgsConstructor
 @RocketMQMessageListener(topic = ORDER_ASYNC_SUBMIT_TOPIC_KEY, consumerGroup = MQConstants.ORDER_CON_GROUP)
-public class OrderListener implements RocketMQListener<OrderMQ> {
+public class OrderSubmitCustomer implements RocketMQListener<OrderMQ> {
 
     @Resource
     private ProductService productService;
@@ -61,14 +65,22 @@ public class OrderListener implements RocketMQListener<OrderMQ> {
     private OrdersService ordersService;
 
     @Override
-    public void onMessage(OrderMQ msg) {
-        log.info("监听到消息：msg={}", msg);
-        Long orderId = msg.getOrderId();
-        Long userId = msg.getUserId();
-        Long addressId = msg.getAddress();
+    @Idempotent(
+            uniqueKeyPrefix = "pigsale-order:pay_result_callback:",
+            key = "#message.getUserId()+'_'+#message.hashCode()",
+            type = IdempotentTypeEnum.SPEL,
+            scene = IdempotentSceneEnum.MQ,
+            keyTimeout = 7200L
+    )
+    @Transactional(rollbackFor = Exception.class)
+    public void onMessage(OrderMQ message) {
+        log.info("监听到消息：message={}", message);
+        Long orderId = message.getOrderId();
+        Long userId = message.getUserId();
+        Long addressId = message.getAddress();
 
         // 获取购物车项
-        List<Long> list = msg.getCartId();
+        List<Long> list = message.getCartId();
         List<Cart> cartList = cartService.getCartListByIds(list);
 
         // 减少库存，设置订单明细
@@ -95,10 +107,6 @@ public class OrderListener implements RocketMQListener<OrderMQ> {
             if (!successFlag) {
                 throw new CustomException("商品库存不足");
             }
-
-            // 此处需要保证缓存的数据一致性，可选方案有：先改数据库再删缓存/延迟双删/Binlog
-            // 此处采用binlog订阅的方式实现，具体查看canal包
-            // stringRedisTemplate.delete(PRODUCT_STOCK_KEY + productId);
 
             // 设置订单明细信息
             return getOrderDetail(orderId, item);
