@@ -42,6 +42,7 @@ import com.ze.pigSale.service.ProductService;
 import com.ze.pigSale.service.UserPermissionService;
 import com.ze.pigSale.service.UserService;
 import com.ze.pigSale.utils.RegexUtils;
+import com.ze.pigSale.utils.SnowFlake;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,6 +104,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public void register(User user) {
+        SnowFlake snowFlake = new SnowFlake(0, 0);
+        long id = snowFlake.nextId();
+        user.setUserId(id);
         // 设置初始状态
         user.setRole(0);
         user.setStatus(1);

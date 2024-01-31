@@ -1,0 +1,45 @@
+# 配置数据源，底层被 ShardingSphere 进行了代理
+dataSources:
+  ds_0:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://127.0.0.1:3306/shopping_pig?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: abc123
+
+rules:
+  # 数据加密存储规则
+  - !ENCRYPT
+    # 需要加密的表集合
+    tables:
+      # 用户表
+      user:
+        # 用户表中哪些字段需要进行加密
+        columns:
+          password:
+            cipherColumn: password
+            encryptorName: md5
+          phone:
+            plainColumn: phone
+            cipherColumn: phone_cipher
+            encryptorName: common_encryptor
+          email:
+            plainColumn: email
+            cipherColumn: email_cipher
+            encryptorName: common_encryptor
+        # 是否按照密文字段查询
+#        queryWithCipherColumn: true
+        queryWithCipherColumn: false
+    # 加密算法
+    encryptors:
+      # 自定义加密算法名称
+      common_encryptor:
+        # 加密算法类型
+        type: AES
+        props:
+          # AES 加密密钥
+          aes-key-value: d6oadClrrb9A3GWo
+      md5:
+        type: MD5
+props:
+  sql-show: true

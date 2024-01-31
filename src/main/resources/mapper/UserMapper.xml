@@ -74,9 +74,9 @@
     </select>
 
     <!-- Lond insertUser(User user); -->
-    <insert id="insertUser" useGeneratedKeys="true" keyProperty="userId">
-        insert into user(username, password, email, phone, role, status)
-        values (#{username}, #{password}, #{email}, #{phone}, #{role}, #{status})
+    <insert id="insertUser">
+        insert into user(user_id, username, password, email, phone, role, status)
+        values (#{userId}, #{username}, #{password}, #{email}, #{phone}, #{role}, #{status})
     </insert>
 
     <!-- User getUserByUsernameOrPhone(User); -->
