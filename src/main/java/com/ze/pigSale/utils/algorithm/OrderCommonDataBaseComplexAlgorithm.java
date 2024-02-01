@@ -19,6 +19,7 @@ package com.ze.pigSale.utils.algorithm;
 
 import cn.hutool.core.collection.CollUtil;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.infra.util.exception.ShardingSpherePreconditions;
 import org.apache.shardingsphere.sharding.api.sharding.complex.ComplexKeysShardingAlgorithm;
 import org.apache.shardingsphere.sharding.api.sharding.complex.ComplexKeysShardingValue;
@@ -31,20 +32,20 @@ import java.util.Properties;
 
 /**
  * 订单数据库复合分片算法配置
- *
  */
+@Slf4j
 public class OrderCommonDataBaseComplexAlgorithm implements ComplexKeysShardingAlgorithm {
 
     @Getter
     private Properties props;
 
     private int shardingCount;
-    private int tableShardingCount;
 
     private static final String SHARDING_COUNT_KEY = "sharding-count";
 
     @Override
     public Collection<String> doSharding(Collection availableTargetNames, ComplexKeysShardingValue shardingValue) {
+        log.info("进入分片.................");
         Map<String, Collection<Comparable<Long>>> columnNameAndShardingValuesMap = shardingValue.getColumnNameAndShardingValuesMap();
         Collection<String> result = new LinkedHashSet<>(availableTargetNames.size());
         if (CollUtil.isNotEmpty(columnNameAndShardingValuesMap)) {
@@ -52,25 +53,32 @@ public class OrderCommonDataBaseComplexAlgorithm implements ComplexKeysShardingA
             Collection<Comparable<Long>> customerUserIdCollection = columnNameAndShardingValuesMap.get(userId);
             if (CollUtil.isNotEmpty(customerUserIdCollection)) {
                 String dbSuffix;
+                long dbValue;
                 Comparable<?> comparable = customerUserIdCollection.stream().findFirst().get();
                 if (comparable instanceof String) {
                     String actualUserId = comparable.toString();
-                    dbSuffix = String.valueOf(hashShardingValue(actualUserId.substring(Math.max(actualUserId.length() - 6, 0))) % shardingCount / tableShardingCount);
+                    dbValue = hashShardingValue(actualUserId.substring(Math.max(actualUserId.length() - 6, 0))) % shardingCount;
                 } else {
-                    dbSuffix = String.valueOf(hashShardingValue((Long) comparable % 1000000) % shardingCount / tableShardingCount);
+                    dbValue = hashShardingValue((Long) comparable % 1000000) % shardingCount;
                 }
+                dbSuffix = String.valueOf(dbValue + 2);
                 result.add("ds_" + dbSuffix);
             } else {
                 String orderSn = "id";
                 String dbSuffix;
+                long dbValue;
                 Collection<Comparable<Long>> orderSnCollection = columnNameAndShardingValuesMap.get(orderSn);
+                if (orderSnCollection == null) {
+                    orderSnCollection = columnNameAndShardingValuesMap.get("order_id");
+                }
                 Comparable<?> comparable = orderSnCollection.stream().findFirst().get();
                 if (comparable instanceof String) {
                     String actualOrderSn = comparable.toString();
-                    dbSuffix = String.valueOf(hashShardingValue(actualOrderSn.substring(Math.max(actualOrderSn.length() - 6, 0))) % shardingCount / tableShardingCount);
+                    dbValue = hashShardingValue(actualOrderSn.substring(Math.max(actualOrderSn.length() - 6, 0))) % shardingCount;
                 } else {
-                    dbSuffix = String.valueOf(hashShardingValue((Long) comparable % 1000000) % shardingCount / tableShardingCount);
+                    dbValue = hashShardingValue((Long) comparable % 1000000) % shardingCount;
                 }
+                dbSuffix = String.valueOf(dbValue + 2);
                 result.add("ds_" + dbSuffix);
             }
         }

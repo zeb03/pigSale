@@ -60,6 +60,9 @@ public class OrderCommonTableComplexAlgorithm implements ComplexKeysShardingAlgo
             } else {
                 String orderSn = "id";
                 Collection<Comparable<?>> orderSnCollection = columnNameAndShardingValuesMap.get(orderSn);
+                if (orderSnCollection == null) {
+                    orderSnCollection = columnNameAndShardingValuesMap.get("order_id");
+                }
                 Comparable<?> comparable = orderSnCollection.stream().findFirst().get();
                 if (comparable instanceof String) {
                     String actualOrderSn = comparable.toString();

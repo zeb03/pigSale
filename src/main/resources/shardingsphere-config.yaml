@@ -37,7 +37,7 @@ rules:
           # 用于单分片键的标准分片场景
           standard:
             # 分片键
-            shardingColumn: username
+            shardingColumn: user_id
             # 分片算法，对应 rules[0].shardingAlgorithms
             shardingAlgorithmName: user_database_hash_mod
         # 分表策略
@@ -45,11 +45,11 @@ rules:
           # 用于单分片键的标准分片场景
           standard:
             # 分片键
-            shardingColumn: username
+            shardingColumn: user_id
             # 分片算法，对应 rules[0].shardingAlgorithms
             shardingAlgorithmName: user_table_hash_mod
       # 订单表
-      order:
+      orders:
         # 真实的数据节点，也对应着在数据库中存储的真实表
         actualDataNodes: ds_${2..3}.order_${0..15}
         # 分库策略
