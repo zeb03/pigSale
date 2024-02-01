@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * author: zebii
@@ -38,7 +39,8 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     @Override
     public void saveBatch(List<OrderDetail> orderDetails) {
-        orderDetailMapper.saveBatch(orderDetails);
+        orderDetails.forEach(item ->orderDetailMapper.save(item));
+//        orderDetailMapper.saveBatch(orderDetails);
     }
 
     @Override

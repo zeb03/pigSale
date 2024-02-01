@@ -15,45 +15,24 @@
  * limitations under the License.
  */
 
-package com.ze.pigSale.entity;
+package com.ze.pigSale.utils.serialize;
 
-import com.alibaba.fastjson.annotation.JSONField;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import lombok.Data;
+import cn.hutool.core.util.DesensitizedUtil;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
-import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.Objects;
+import java.io.IOException;
 
 /**
- * @TableName user
+ * 手机号脱敏反序列化
+ *
  */
-@Data
-public class User implements Serializable {
+public class PhoneDesensitizationSerializer extends JsonSerializer<String> {
 
-    private Long userId;
-
-    private String username;
-
-    private String password;
-
-    private String email;
-
-    @JsonSerialize(using = com.ze.pigSale.utils.serialize.PhoneDesensitizationSerializer.class)
-    private String phone;
-
-    private String name;
-
-    private String gender;
-
-    private LocalDate birthday;
-
-    private Integer role;
-
-    private String image;
-
-    private Integer status;
-
+    @Override
+    public void serialize(String phone, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+        String phoneDesensitization = DesensitizedUtil.mobilePhone(phone);
+        jsonGenerator.writeString(phoneDesensitization);
+    }
 }

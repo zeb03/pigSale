@@ -75,8 +75,8 @@
 
     <!-- Lond insertUser(User user); -->
     <insert id="insertUser">
-        insert into user(user_id, username, password, email, phone, role, status)
-        values (#{userId}, #{username}, #{password}, #{email}, #{phone}, #{role}, #{status})
+        insert into user(user_id, username, password, email, phone, role, status, image)
+        values (#{userId}, #{username}, #{password}, #{email}, #{phone}, #{role}, #{status}, #{image})
     </insert>
 
     <!-- User getUserByUsernameOrPhone(User); -->

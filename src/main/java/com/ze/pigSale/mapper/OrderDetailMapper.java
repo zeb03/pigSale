@@ -36,6 +36,12 @@ import java.util.List;
 public interface OrderDetailMapper {
 
     /**
+     * 保存订单详情
+     * @param orderDetail
+     */
+    void save(OrderDetail orderDetail);
+
+    /**
      * 批量保存
      * @param orderDetails
      */

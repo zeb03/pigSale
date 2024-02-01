@@ -18,12 +18,16 @@
         quantity,price
     </sql>
 
+    <insert id="save">
+        insert into order_detail values
+        (null, #{orderId}, #{productId}, #{quantity}, #{price})
+    </insert>
+
     <insert id="saveBatch">
         insert into order_detail values
         <foreach collection="orderDetails" separator="," item="item">
             (null, #{item.orderId}, #{item.productId}, #{item.quantity}, #{item.price})
         </foreach>
-
     </insert>
 
     <select id="getListByOrderId" resultType="com.ze.pigSale.entity.OrderDetail">
